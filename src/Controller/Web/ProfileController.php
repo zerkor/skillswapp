@@ -20,7 +20,7 @@ class ProfileController extends AbstractController
         private readonly GamificationService $gamificationService,
     ) {}
 
-    #[Route('/profile/{id}', name: 'app_profile_show')]
+    #[Route('/profile/{id}', name: 'app_profile_show', requirements: ['id' => '\d+'])]
     public function show(int $id): Response
     {
         $user = $this->userRepository->find($id);

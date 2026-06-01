@@ -36,6 +36,26 @@ class SessionRepository extends ServiceEntityRepository
     }
 
     /**
+     * Passe les sessions confirmées dont la date est passée en "en_cours".
+     * Appelé au chargement de la liste pour garder les statuts à jour.
+     */
+    public function transitionStatuses(): void
+    {
+        $now = new \DateTime();
+
+        $this->createQueryBuilder('s')
+            ->update()
+            ->set('s.statut', ':enCours')
+            ->where('s.statut = :confirmee')
+            ->andWhere('s.date <= :now')
+            ->setParameter('enCours',   Session::STATUT_EN_COURS)
+            ->setParameter('confirmee', Session::STATUT_CONFIRMEE)
+            ->setParameter('now',       $now)
+            ->getQuery()
+            ->execute();
+    }
+
+    /**
      * Nombre de sessions complétées au total (pour les stats de la home).
      */
     public function countCompleted(): int

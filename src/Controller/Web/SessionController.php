@@ -20,7 +20,8 @@ class SessionController extends AbstractController
     public function index(): Response
     {
         /** @var User $user */
-        $user     = $this->getUser();
+        $user = $this->getUser();
+        $this->sessionRepository->transitionStatuses();
         $sessions = $this->sessionRepository->findByUser($user);
 
         return $this->render('session/index.html.twig', [

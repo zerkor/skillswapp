@@ -31,6 +31,7 @@ class SessionApiController extends AbstractController
     #[Route('', name: 'list', methods: ['GET'])]
     public function list(#[CurrentUser] User $user): JsonResponse
     {
+        $this->sessionRepository->transitionStatuses();
         $sessions = $this->sessionRepository->findByUser($user);
 
         return $this->success(array_map(fn($s) => $s->toArray(), $sessions));

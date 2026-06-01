@@ -24,15 +24,15 @@
             <p class="auth-subtitle">Connectez-vous pour accéder à votre espace</p>
         </div>
 
-        {% if error %}
-            <div class="alert alert-error" role="alert">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true"><circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2"/><line x1="12" y1="8" x2="12" y2="12" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><line x1="12" y1="16" x2="12.01" y2="16" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
-                {{ error.messageKey|trans(error.messageData, 'security') }}
-            </div>
-        {% endif %}
 
-        <form method="post" action="{{ path('app_login') }}" class="auth-form" novalidate>
+        {% if error %}
+            <div class="alert alert-error" role="alert">{{ error.messageKey|trans(error.messageData, 'security') }}</div>
+        {% endif %}
+        <div id="loginError" class="alert alert-error" role="alert" style="display:none"></div>
+
+        <form id="loginForm" method="post" action="{{ path('app_login') }}" class="auth-form" novalidate>
             <input type="hidden" name="_csrf_token" value="{{ csrf_token('authenticate') }}">
+            <input type="hidden" name="_target_path" value="/feed">
 
             <div class="input-group">
                 <label class="input-label" for="inputEmail">Email</label>
@@ -40,7 +40,6 @@
                     type="email"
                     id="inputEmail"
                     name="_username"
-                    value="{{ last_username }}"
                     class="input-field"
                     placeholder="votre@email.fr"
                     autocomplete="email"
@@ -70,14 +69,7 @@
                 </div>
             </div>
 
-            <div class="input-group input-group--checkbox">
-                <label class="checkbox-label">
-                    <input type="checkbox" name="_remember_me">
-                    <span>Rester connecté</span>
-                </label>
-            </div>
-
-            <button type="submit" class="btn btn-primary btn-full">
+            <button type="submit" id="loginBtn" class="btn btn-primary btn-full">
                 Se connecter
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4M10 17l5-5-5-5M15 12H3" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
             </button>
@@ -94,8 +86,9 @@
     </div>
 </div>
 
+<script src="/js/api.js"></script>
+<script src="/js/auth.js"></script>
 <script>
-    // Toggle password visibility
     document.querySelectorAll('.input-toggle-password').forEach(btn => {
         btn.addEventListener('click', () => {
             const input = btn.previousElementSibling;
@@ -103,6 +96,31 @@
             input.type = isText ? 'password' : 'text';
             btn.setAttribute('aria-label', isText ? 'Afficher le mot de passe' : 'Masquer le mot de passe');
         });
+    });
+
+    document.getElementById('loginForm').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const email    = document.getElementById('inputEmail').value.trim();
+        const password = document.getElementById('inputPassword').value;
+        const btn      = document.getElementById('loginBtn');
+        const errorEl  = document.getElementById('loginError');
+
+        errorEl.style.display = 'none';
+        btn.disabled = true;
+        btn.textContent = 'Connexion…';
+
+        // 1. Récupérer le JWT pour les appels API
+        const result = await apiLogin(email, password);
+
+        if (result.success) {
+            // 2. Soumettre le formulaire normalement pour la session Symfony
+            e.target.submit();
+        } else {
+            errorEl.textContent = result.error;
+            errorEl.style.display = 'flex';
+            btn.disabled = false;
+            btn.innerHTML = 'Se connecter <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4M10 17l5-5-5-5M15 12H3" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+        }
     });
 </script>
 {% endblock %}

@@ -1,5 +1,6 @@
 parameters:
-    allowed_email_domain: '%env(default::ALLOWED_EMAIL_DOMAIN)%'
+    app.allowed_email_domain_default: ''
+    allowed_email_domain: '%env(default:app.allowed_email_domain_default:ALLOWED_EMAIL_DOMAIN)%'
     jwt_ttl: '%env(int:JWT_TTL)%'
 
 services:
@@ -13,6 +14,11 @@ services:
             - '../src/DependencyInjection/'
             - '../src/Entity/'
             - '../src/Kernel.php'
+
+    App\Controller\Api\AuthApiController:
+        arguments:
+            $loginLimiterFactory: '@limiter.login_limiter'
+            $allowedEmailDomain: '%allowed_email_domain%'
 
     App\EventListener\JwtCreatedListener:
         tags:

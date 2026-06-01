@@ -21,11 +21,13 @@
     <div id="sessionAlert" class="alert" role="alert" style="display:none"></div>
 
     <div class="card" style="padding:var(--spacing-8);">
-        <div class="input-group">
-            <label class="input-label" for="sessionTuteur">Tuteur</label>
+        <div class="input-group" style="position:relative">
+            <label class="input-label" for="sessionTuteurSearch">Tuteur</label>
             <input type="hidden" id="sessionTuteurId" value="">
-            <input type="text" id="sessionTuteur" class="input-field" placeholder="Nom du tuteur" readonly>
-            <p class="input-hint">Sélectionnez un tuteur depuis la <a href="{{ path('app_search') }}">recherche</a>.</p>
+            <input type="text" id="sessionTuteur" style="display:none" readonly>
+            <input type="text" id="sessionTuteurSearch" class="input-field" placeholder="Tapez une compétence pour trouver un tuteur…" autocomplete="off">
+            <div id="tuteurDropdown" style="display:none; position:absolute; top:100%; left:0; right:0; background:var(--color-surface); border:1px solid var(--color-border); border-radius:var(--radius-md); box-shadow:var(--shadow-lg); z-index:100; max-height:220px; overflow-y:auto;"></div>
+            <p class="input-hint" id="tuteurHint">Recherchez par compétence pour trouver un tuteur disponible.</p>
         </div>
 
         <div class="input-group">
@@ -70,19 +72,95 @@
 
 <script src="/js/session.js"></script>
 <script>
-    // Pré-remplir le tuteur depuis l'URL ?tuteur=ID
-    const params   = new URLSearchParams(window.location.search);
-    const tuteurId = params.get('tuteur');
-    if (tuteurId) {
-        document.getElementById('sessionTuteurId').value = tuteurId;
-        fetch(`/api/users/${tuteurId}`, { headers: getAuthHeaders() })
-            .then(r => r.json())
-            .then(json => {
-                if (json.success) {
-                    document.getElementById('sessionTuteur').value = json.data.fullName || `${json.data.prenom} ${json.data.nom}`;
-                }
+    // Pré-remplir le tuteur depuis l'URL ?tuteur=ID (après chargement de api.js)
+    document.addEventListener('DOMContentLoaded', () => {
+        const params   = new URLSearchParams(window.location.search);
+        const tuteurId = params.get('tuteur');
+        if (tuteurId) {
+            document.getElementById('sessionTuteurId').value = tuteurId;
+            fetch(`/api/users/${tuteurId}`, { headers: getAuthHeaders() })
+                .then(r => r.json())
+                .then(json => {
+                    if (json.success) {
+                        const name = json.data.fullName || `${json.data.prenom} ${json.data.nom}`;
+                        selectTuteur(tuteurId, name);
+                    }
+                });
+        }
+    });
+
+    // ── Autocomplete tuteur ──
+    const searchInput = document.getElementById('sessionTuteurSearch');
+    const dropdown    = document.getElementById('tuteurDropdown');
+    const hint        = document.getElementById('tuteurHint');
+    let debounce;
+
+    searchInput.addEventListener('input', () => {
+        clearTimeout(debounce);
+        const q = searchInput.value.trim();
+        if (q.length < 2) { dropdown.style.display = 'none'; return; }
+        debounce = setTimeout(() => searchTuteurs(q), 350);
+    });
+
+    searchInput.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape') dropdown.style.display = 'none';
+    });
+
+    document.addEventListener('click', (e) => {
+        if (!e.target.closest('#tuteurDropdown') && e.target !== searchInput) {
+            dropdown.style.display = 'none';
+        }
+    });
+
+    async function searchTuteurs(q) {
+        const json = await apiCall(`/api/matching?skill=${encodeURIComponent(q)}`);
+        if (!json.success || !json.data.length) {
+            dropdown.innerHTML = '<div style="padding:.75rem 1rem;color:var(--color-text-muted);font-size:var(--text-sm);">Aucun tuteur trouvé pour cette compétence.</div>';
+            dropdown.style.display = 'block';
+            return;
+        }
+        dropdown.innerHTML = '';
+        json.data.slice(0, 8).forEach(match => {
+            const u = match.user;
+            const item = document.createElement('div');
+            item.style.cssText = 'padding:.6rem 1rem;cursor:pointer;display:flex;align-items:center;gap:.6rem;font-size:var(--text-sm);border-bottom:1px solid var(--color-border-light);';
+            item.innerHTML = `
+                <div class="avatar avatar-xs avatar-placeholder" style="width:28px;height:28px;font-size:11px;flex-shrink:0">
+                    ${(u.prenom||'')[0]||''}${(u.nom||'')[0]||''}
+                </div>
+                <div>
+                    <strong>${u.fullName || u.prenom + ' ' + u.nom}</strong>
+                    <span style="color:var(--color-text-muted);margin-left:.4rem;">${match.matchedSkill.nom}</span>
+                </div>
+                <span style="margin-left:auto;color:var(--color-primary);font-weight:600;">${match.score}%</span>`;
+            item.addEventListener('mouseenter', () => item.style.background = 'var(--color-surface-alt)');
+            item.addEventListener('mouseleave', () => item.style.background = '');
+            item.addEventListener('click', () => {
+                selectTuteur(u.id, u.fullName || u.prenom + ' ' + u.nom);
+                document.getElementById('sessionCompetence').value = match.matchedSkill.nom;
             });
+            dropdown.appendChild(item);
+        });
+        dropdown.style.display = 'block';
     }
+
+    function selectTuteur(id, name) {
+        document.getElementById('sessionTuteurId').value = id;
+        searchInput.value = name;
+        searchInput.readOnly = true;
+        searchInput.style.background = 'var(--color-surface-alt)';
+        dropdown.style.display = 'none';
+        hint.innerHTML = `Tuteur sélectionné. <button type="button" onclick="resetTuteur()" style="background:none;border:none;color:var(--color-primary);cursor:pointer;padding:0;text-decoration:underline;">Changer</button>`;
+    }
+
+    window.resetTuteur = () => {
+        document.getElementById('sessionTuteurId').value = '';
+        searchInput.value = '';
+        searchInput.readOnly = false;
+        searchInput.style.background = '';
+        hint.innerHTML = 'Recherchez par compétence pour trouver un tuteur disponible.';
+        searchInput.focus();
+    };
 
     document.getElementById('submitSession')?.addEventListener('click', async () => {
         const tuteurId  = document.getElementById('sessionTuteurId').value;

@@ -13,7 +13,7 @@ framework:
     form: ~
     csrf_protection: true
     serializer:
-        enable_annotations: false
+        enable_attributes: true
     rate_limiter:
         login_limiter:
             policy: 'sliding_window'

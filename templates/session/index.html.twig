@@ -97,7 +97,7 @@
                         <button class="btn btn-danger btn-sm" onclick="declineSession({{ session.id }}, this)">Refuser</button>
                     {% elseif session.statut == 'proposee' and not isTuteur %}
                         <button class="btn btn-ghost btn-sm" onclick="cancelSession({{ session.id }}, this)">Annuler</button>
-                    {% elseif session.statut == 'confirmee' %}
+                    {% elseif session.statut in ['confirmee', 'en_cours'] %}
                         <button class="btn btn-success btn-sm" onclick="completeSession({{ session.id }}, this)">
                             Marquer complète
                         </button>
