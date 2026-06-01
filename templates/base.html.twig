@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="SkillSwap — Le site qui connecte les étudiants par leurs compétences">
+    <meta name="theme-color" content="#2E75B6">
+    <title>{% block title %}SkillSwap{% endblock %}</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+
+    <link rel="stylesheet" href="/css/variables.css">
+    <link rel="stylesheet" href="/css/reset.css">
+    <link rel="stylesheet" href="/css/components.css">
+    <link rel="stylesheet" href="/css/layout.css">
+    {% block stylesheets %}{% endblock %}
+</head>
+<body class="{% block body_class %}{% endblock %}">
+
+    {# ═══ NAVIGATION ═══ #}
+    <nav class="navbar" role="navigation" aria-label="Navigation principale">
+        <div class="container nav-container">
+
+            <a href="{{ path('app_home') }}" class="nav-logo" aria-label="Accueil SkillSwap">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                    <path d="M7 16L3 12L7 8" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+                    <path d="M17 8L21 12L17 16" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+                    <path d="M14 4L10 20" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/>
+                </svg>
+                SkillSwap
+            </a>
+
+            <button class="nav-hamburger" id="navToggle" aria-label="Ouvrir le menu" aria-expanded="false" aria-controls="navMenu">
+                <span></span>
+                <span></span>
+                <span></span>
+            </button>
+
+            <div class="nav-menu" id="navMenu" role="menubar">
+                <a href="{{ path('app_home') }}" class="nav-link {% if app.request.attributes.get('_route') == 'app_home' %}active{% endif %}" role="menuitem">
+                    Accueil
+                </a>
+                {% if app.user %}
+                    <a href="{{ path('app_search') }}" class="nav-link {% if app.request.attributes.get('_route') == 'app_search' %}active{% endif %}" role="menuitem">
+                        Rechercher
+                    </a>
+                    <a href="{{ path('app_feed') }}" class="nav-link {% if app.request.attributes.get('_route') starts with 'app_feed' %}active{% endif %}" role="menuitem">
+                        Feed
+                    </a>
+                    <a href="{{ path('app_leaderboard') }}" class="nav-link {% if app.request.attributes.get('_route') == 'app_leaderboard' %}active{% endif %}" role="menuitem">
+                        Classement
+                    </a>
+                {% endif %}
+            </div>
+
+            <div class="nav-actions">
+                {% if app.user %}
+                    <div class="nav-user-menu">
+                        <button class="nav-user-btn" id="userMenuToggle" aria-label="Menu utilisateur" aria-expanded="false">
+                            {% if app.user.photo %}
+                                <img src="{{ app.user.photo }}" alt="{{ app.user.fullName }}" class="avatar avatar-sm">
+                            {% else %}
+                                <div class="avatar avatar-sm avatar-placeholder">
+                                    {{ app.user.prenom|slice(0,1) }}{{ app.user.nom|slice(0,1) }}
+                                </div>
+                            {% endif %}
+                            <span class="nav-user-name">{{ app.user.prenom }}</span>
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                                <path d="M6 9L12 15L18 9" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                            </svg>
+                        </button>
+                        <div class="user-dropdown" id="userDropdown" role="menu">
+                            <a href="{{ path('app_profile_show', {id: app.user.id}) }}" class="dropdown-item" role="menuitem">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="8" r="4" stroke="currentColor" stroke-width="2"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+                                Mon profil
+                            </a>
+                            <a href="{{ path('app_profile_edit') }}" class="dropdown-item" role="menuitem">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+                                Éditer le profil
+                            </a>
+                            <a href="{{ path('app_sessions') }}" class="dropdown-item" role="menuitem">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><rect x="3" y="4" width="18" height="18" rx="2" stroke="currentColor" stroke-width="2"/><path d="M16 2v4M8 2v4M3 10h18" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+                                Mes sessions
+                            </a>
+                            <div class="dropdown-divider"></div>
+                            <a href="{{ path('app_logout') }}" class="dropdown-item dropdown-item--danger" role="menuitem">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                                Déconnexion
+                            </a>
+                        </div>
+                    </div>
+                {% else %}
+                    <a href="{{ path('app_login') }}" class="btn btn-ghost btn-sm">Connexion</a>
+                    <a href="{{ path('app_register') }}" class="btn btn-primary btn-sm">Rejoindre</a>
+                {% endif %}
+            </div>
+        </div>
+    </nav>
+
+    {# ═══ FLASH MESSAGES ═══ #}
+    {% for label, messages in app.flashes %}
+        {% for message in messages %}
+            <div class="flash flash-{{ label }}" role="alert">
+                {{ message }}
+                <button class="flash-close" aria-label="Fermer">&times;</button>
+            </div>
+        {% endfor %}
+    {% endfor %}
+
+    {# ═══ CONTENU PRINCIPAL ═══ #}
+    <main id="main-content">
+        {% block body %}{% endblock %}
+    </main>
+
+    {# ═══ FOOTER ═══ #}
+    <footer class="footer">
+        <div class="container footer-grid">
+            <div class="footer-brand">
+                <a href="{{ path('app_home') }}" class="footer-logo">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                        <path d="M7 16L3 12L7 8" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+                        <path d="M17 8L21 12L17 16" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+                        <path d="M14 4L10 20" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/>
+                    </svg>
+                    SkillSwap
+                </a>
+                <p class="footer-tagline">Le site qui connecte les étudiants par leurs compétences</p>
+            </div>
+
+            <div class="footer-links">
+                <h4>Plateforme</h4>
+                <ul>
+                    <li><a href="{{ path('app_home') }}">Accueil</a></li>
+                    {% if app.user %}
+                    <li><a href="{{ path('app_search') }}">Rechercher</a></li>
+                    <li><a href="{{ path('app_feed') }}">Feed</a></li>
+                    <li><a href="{{ path('app_leaderboard') }}">Classement</a></li>
+                    {% else %}
+                    <li><a href="{{ path('app_register') }}">S'inscrire</a></li>
+                    <li><a href="{{ path('app_login') }}">Se connecter</a></li>
+                    {% endif %}
+                </ul>
+            </div>
+
+            <div class="footer-links">
+                <h4>Légal</h4>
+                <ul>
+                    <li><a href="#">Mentions légales</a></li>
+                    <li><a href="#">Politique de confidentialité</a></li>
+                    <li><a href="#">RGPD</a></li>
+                    <li><a href="#">Conditions d'utilisation</a></li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="footer-bottom">
+            <div class="container">
+                <p>&copy; {{ "now"|date("Y") }} SkillSwap — Tous droits réservés</p>
+                <p class="footer-rgpd">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                        <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                    Vos données sont protégées conformément au RGPD
+                </p>
+            </div>
+        </div>
+    </footer>
+
+    <script src="/js/api.js"></script>
+    <script src="/js/auth.js"></script>
+    {% block javascripts %}{% endblock %}
+    <script>
+        // Hamburger menu
+        const navToggle = document.getElementById('navToggle');
+        const navMenu   = document.getElementById('navMenu');
+        if (navToggle && navMenu) {
+            navToggle.addEventListener('click', () => {
+                const isOpen = navMenu.classList.toggle('is-open');
+                navToggle.classList.toggle('is-active', isOpen);
+                navToggle.setAttribute('aria-expanded', isOpen);
+            });
+        }
+        // User dropdown
+        const userToggle   = document.getElementById('userMenuToggle');
+        const userDropdown = document.getElementById('userDropdown');
+        if (userToggle && userDropdown) {
+            userToggle.addEventListener('click', (e) => {
+                e.stopPropagation();
+                const isOpen = userDropdown.classList.toggle('is-open');
+                userToggle.setAttribute('aria-expanded', isOpen);
+            });
+            document.addEventListener('click', () => {
+                userDropdown.classList.remove('is-open');
+                userToggle?.setAttribute('aria-expanded', 'false');
+            });
+        }
+        // Flash messages
+        document.querySelectorAll('.flash-close').forEach(btn => {
+            btn.addEventListener('click', () => btn.closest('.flash')?.remove());
+        });
+    </script>
+</body>
+</html>

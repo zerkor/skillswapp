@@ -1,0 +1,146 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Feed — SkillSwap{% endblock %}
+{% block body_class %}page-feed{% endblock %}
+
+{% block stylesheets %}
+    <link rel="stylesheet" href="/css/pages/feed.css">
+{% endblock %}
+
+{% block body %}
+<div class="container feed-layout">
+
+    {# ════ COLONNE PRINCIPALE ════ #}
+    <main class="feed-main" aria-label="Fil d'actualité">
+
+        {# Formulaire de publication #}
+        <div class="card post-form" aria-label="Créer un post">
+            <div class="post-form-header">
+                {% if app.user.photo %}
+                    <img src="{{ app.user.photo }}" alt="{{ app.user.fullName }}" class="avatar avatar-md">
+                {% else %}
+                    <div class="avatar avatar-md avatar-placeholder">{{ app.user.prenom|slice(0,1) }}{{ app.user.nom|slice(0,1) }}</div>
+                {% endif %}
+                <textarea
+                    id="postContent"
+                    class="input-field post-textarea"
+                    placeholder="Partagez une astuce, un apprentissage, une question…"
+                    rows="2"
+                    maxlength="2000"
+                    aria-label="Contenu du post"
+                ></textarea>
+            </div>
+            <div class="post-form-footer">
+                <input type="text" id="postTag" class="input-field input-field--sm" placeholder="# Compétence (optionnel)" style="max-width:220px">
+                <div style="display:flex;gap:var(--spacing-2);">
+                    <span id="postCharCount" class="char-count">0/2000</span>
+                    <button class="btn btn-primary btn-sm" id="submitPost">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M22 2L11 13M22 2l-7 20-4-9-9-4 20-7z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                        Publier
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        {# Fil de posts #}
+        <div id="feedContainer" role="feed" aria-live="polite" aria-label="Posts récents">
+            <div class="feed-loader" id="feedLoader">
+                <div class="spinner"></div>
+                <span>Chargement du feed…</span>
+            </div>
+        </div>
+
+        <div id="feedPagination" class="feed-pagination" style="display:none">
+            <button class="btn btn-secondary" id="loadMoreBtn">
+                Charger plus
+            </button>
+        </div>
+    </main>
+
+    {# ════ SIDEBAR ════ #}
+    <aside class="feed-sidebar" aria-label="Informations complémentaires">
+
+        {# Mini leaderboard #}
+        <section class="card sidebar-section" aria-labelledby="leaderboard-title">
+            <h2 id="leaderboard-title" class="section-title-sm">
+                🏆 Top 5 — Classement
+            </h2>
+            <ol class="mini-leaderboard">
+                {% for user in topUsers %}
+                    <li class="mini-rank-item">
+                        <span class="mini-rank">{{ loop.index }}</span>
+                        {% if user.photo %}
+                            <img src="{{ user.photo }}" alt="{{ user.fullName }}" class="avatar avatar-sm">
+                        {% else %}
+                            <div class="avatar avatar-sm avatar-placeholder">{{ user.prenom|slice(0,1) }}{{ user.nom|slice(0,1) }}</div>
+                        {% endif %}
+                        <div class="mini-rank-info">
+                            <a href="{{ path('app_profile_show', {id: user.id}) }}" class="mini-rank-name">{{ user.fullName }}</a>
+                            <span class="badge-niveau {{ user.niveau }}">{{ user.niveau|capitalize }}</span>
+                        </div>
+                        <span class="mini-rank-score">{{ user.score }} pts</span>
+                    </li>
+                {% endfor %}
+            </ol>
+            <a href="{{ path('app_leaderboard') }}" class="btn btn-ghost btn-sm" style="width:100%;margin-top:var(--spacing-3);">
+                Voir le classement complet
+            </a>
+        </section>
+
+        {# Suggestions #}
+        <section class="card sidebar-section" id="suggestionsSection" aria-labelledby="suggestions-title">
+            <h2 id="suggestions-title" class="section-title-sm">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><circle cx="11" cy="11" r="8" stroke="currentColor" stroke-width="2"/><path d="M21 21l-4.35-4.35" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+                Suggestions
+            </h2>
+            <p class="sidebar-hint">Recherchez une compétence pour voir des suggestions de matchs.</p>
+            <a href="{{ path('app_search') }}" class="btn btn-accent btn-sm" style="width:100%;margin-top:var(--spacing-3);">
+                Trouver un tuteur
+            </a>
+        </section>
+
+    </aside>
+</div>
+
+{# Template de post (cloné par JS) #}
+<template id="postTemplate">
+    <article class="post-card card">
+        <div class="post-header">
+            <div class="post-author">
+                <img class="avatar avatar-sm post-avatar" src="" alt="" loading="lazy">
+                <div class="avatar avatar-sm avatar-placeholder post-avatar-placeholder" aria-hidden="true"></div>
+                <div class="post-author-info">
+                    <a href="#" class="post-author-name"></a>
+                    <time class="post-date" datetime=""></time>
+                </div>
+            </div>
+            <button class="btn btn-ghost btn-sm post-delete-btn" style="display:none" aria-label="Supprimer le post">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><polyline points="3 6 5 6 21 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </button>
+        </div>
+        <div class="post-body">
+            <p class="post-content"></p>
+            <span class="tag-skill post-tag" style="display:none"></span>
+        </div>
+        <div class="post-footer">
+            <button class="post-action-btn post-like-btn" aria-label="J'aime">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                <span class="like-count">0</span>
+            </button>
+            <button class="post-action-btn post-comment-toggle" aria-label="Commentaires" aria-expanded="false">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                <span class="comment-count">0</span>
+            </button>
+        </div>
+        <div class="post-comments" style="display:none">
+            <div class="comments-list"></div>
+            <div class="comment-form">
+                <input type="text" class="input-field comment-input" placeholder="Votre commentaire…" maxlength="500">
+                <button class="btn btn-primary btn-sm comment-submit">Envoyer</button>
+            </div>
+        </div>
+    </article>
+</template>
+
+<script src="/js/feed.js"></script>
+{% endblock %}

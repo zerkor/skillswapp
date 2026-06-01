@@ -1,0 +1,326 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Inscription — SkillSwap{% endblock %}
+{% block body_class %}page-auth{% endblock %}
+
+{% block stylesheets %}
+    <link rel="stylesheet" href="/css/pages/auth.css">
+{% endblock %}
+
+{% block body %}
+<div class="auth-wrapper auth-wrapper--register">
+    <div class="auth-card card">
+
+        <div class="auth-header">
+            <a href="{{ path('app_home') }}" class="auth-logo">
+                <svg width="32" height="32" viewBox="0 0 24 24" fill="none">
+                    <path d="M7 16L3 12L7 8" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+                    <path d="M17 8L21 12L17 16" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+                    <path d="M14 4L10 20" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/>
+                </svg>
+                SkillSwap
+            </a>
+            <h1 class="auth-title">Créer un compte</h1>
+            <p class="auth-subtitle">Rejoignez la communauté en 3 étapes</p>
+        </div>
+
+        {# Barre de progression #}
+        <div class="register-steps" aria-label="Progression de l'inscription">
+            <div class="step-item step--active" data-step="1">
+                <div class="step-dot">1</div>
+                <span>Compte</span>
+            </div>
+            <div class="step-connector"></div>
+            <div class="step-item" data-step="2">
+                <div class="step-dot">2</div>
+                <span>Profil</span>
+            </div>
+            <div class="step-connector"></div>
+            <div class="step-item" data-step="3">
+                <div class="step-dot">3</div>
+                <span>Compétences</span>
+            </div>
+        </div>
+
+        <div id="registerError" class="alert alert-error" role="alert" style="display:none"></div>
+        <div id="registerSuccess" class="alert alert-success" role="alert" style="display:none"></div>
+
+        {# ── Étape 1 : Compte ── #}
+        <div class="register-step-panel" id="step1Panel">
+            <div class="input-group">
+                <label class="input-label" for="regEmail">Adresse email</label>
+                <input type="email" id="regEmail" class="input-field" placeholder="votre@email.fr" autocomplete="email" required>
+            </div>
+            <div class="input-group">
+                <label class="input-label" for="regPassword">Mot de passe</label>
+                <div class="input-password-wrapper">
+                    <input type="password" id="regPassword" class="input-field" placeholder="Au moins 8 caractères" autocomplete="new-password" required>
+                    <button type="button" class="input-toggle-password" aria-label="Afficher">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" stroke="currentColor" stroke-width="2"/><circle cx="12" cy="12" r="3" stroke="currentColor" stroke-width="2"/></svg>
+                    </button>
+                </div>
+                <div class="password-strength" id="passwordStrength"></div>
+            </div>
+            <div class="input-group">
+                <label class="input-label" for="regPasswordConfirm">Confirmer le mot de passe</label>
+                <div class="input-password-wrapper">
+                    <input type="password" id="regPasswordConfirm" class="input-field" placeholder="••••••••" autocomplete="new-password" required>
+                    <button type="button" class="input-toggle-password" aria-label="Afficher">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" stroke="currentColor" stroke-width="2"/><circle cx="12" cy="12" r="3" stroke="currentColor" stroke-width="2"/></svg>
+                    </button>
+                </div>
+            </div>
+            <button type="button" class="btn btn-primary btn-full" id="step1Next">
+                Continuer
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M5 12h14M12 5l7 7-7 7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </button>
+        </div>
+
+        {# ── Étape 2 : Profil ── #}
+        <div class="register-step-panel" id="step2Panel" hidden>
+            <div class="input-row">
+                <div class="input-group">
+                    <label class="input-label" for="regPrenom">Prénom</label>
+                    <input type="text" id="regPrenom" class="input-field" placeholder="Marie" required>
+                </div>
+                <div class="input-group">
+                    <label class="input-label" for="regNom">Nom</label>
+                    <input type="text" id="regNom" class="input-field" placeholder="Dupont" required>
+                </div>
+            </div>
+            <div class="input-group">
+                <label class="input-label" for="regFormation">Formation</label>
+                <input type="text" id="regFormation" class="input-field" placeholder="Master Informatique">
+            </div>
+            <div class="input-group">
+                <label class="input-label" for="regPromotion">Promotion</label>
+                <input type="text" id="regPromotion" class="input-field" placeholder="2025">
+            </div>
+            <div class="input-group">
+                <label class="input-label" for="regBio">Bio <span class="input-optional">(optionnel)</span></label>
+                <textarea id="regBio" class="input-field" placeholder="Parlez-vous en quelques mots..." rows="3" maxlength="500"></textarea>
+            </div>
+            <div class="register-nav-btns">
+                <button type="button" class="btn btn-ghost" id="step2Back">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M19 12H5M12 19l-7-7 7-7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                    Retour
+                </button>
+                <button type="button" class="btn btn-primary" id="step2Next">
+                    Continuer
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M5 12h14M12 5l7 7-7 7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                </button>
+            </div>
+        </div>
+
+        {# ── Étape 3 : Compétences ── #}
+        <div class="register-step-panel" id="step3Panel" hidden>
+            <p class="step-help">Ajoutez au moins une compétence pour démarrer.</p>
+
+            <div class="skill-add-form">
+                <div class="input-row">
+                    <div class="input-group input-group--grow">
+                        <label class="input-label" for="skillName">Compétence</label>
+                        <input type="text" id="skillName" class="input-field" placeholder="ex: Python, Photoshop, Anglais...">
+                    </div>
+                    <div class="input-group">
+                        <label class="input-label" for="skillType">Je veux</label>
+                        <select id="skillType" class="input-field">
+                            <option value="teach">Enseigner</option>
+                            <option value="learn">Apprendre</option>
+                        </select>
+                    </div>
+                    <div class="input-group">
+                        <label class="input-label" for="skillLevel">Niveau</label>
+                        <select id="skillLevel" class="input-field">
+                            <option value="1">Débutant</option>
+                            <option value="2">Intermédiaire</option>
+                            <option value="3">Avancé</option>
+                            <option value="4">Expert</option>
+                        </select>
+                    </div>
+                </div>
+                <button type="button" class="btn btn-accent btn-sm" id="addSkillBtn">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><line x1="12" y1="5" x2="12" y2="19" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><line x1="5" y1="12" x2="19" y2="12" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+                    Ajouter
+                </button>
+            </div>
+
+            <div class="skills-preview" id="skillsPreview">
+                <p class="skills-empty" id="skillsEmpty">Aucune compétence ajoutée.</p>
+            </div>
+
+            <div class="register-nav-btns">
+                <button type="button" class="btn btn-ghost" id="step3Back">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M19 12H5M12 19l-7-7 7-7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                    Retour
+                </button>
+                <button type="button" class="btn btn-primary" id="submitRegister">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><polyline points="22 4 12 14.01 9 11.01" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                    Créer mon compte
+                </button>
+            </div>
+        </div>
+
+        <div class="auth-footer">
+            <p>Déjà un compte ? <a href="{{ path('app_login') }}" class="auth-link">Se connecter</a></p>
+        </div>
+    </div>
+</div>
+
+<script src="/js/auth.js"></script>
+<script>
+    // Multi-step registration
+    const steps       = [
+        document.getElementById('step1Panel'),
+        document.getElementById('step2Panel'),
+        document.getElementById('step3Panel'),
+    ];
+    const stepItems   = document.querySelectorAll('.step-item');
+    const skills      = [];
+    let currentStep   = 0;
+
+    function goTo(step) {
+        steps.forEach((p, i) => {
+            p.hidden = i !== step;
+            stepItems[i].classList.toggle('step--active', i <= step);
+            stepItems[i].classList.toggle('step--done', i < step);
+        });
+        currentStep = step;
+    }
+
+    document.getElementById('step1Next')?.addEventListener('click', () => {
+        const email = document.getElementById('regEmail').value;
+        const pass  = document.getElementById('regPassword').value;
+        const conf  = document.getElementById('regPasswordConfirm').value;
+        if (!email || !pass || pass !== conf) {
+            showError('Vérifiez vos informations (email valide, mots de passe identiques).');
+            return;
+        }
+        if (pass.length < 8) {
+            showError('Le mot de passe doit contenir au moins 8 caractères.');
+            return;
+        }
+        hideMessages();
+        goTo(1);
+    });
+    document.getElementById('step2Back')?.addEventListener('click', () => goTo(0));
+    document.getElementById('step2Next')?.addEventListener('click', () => {
+        if (!document.getElementById('regPrenom').value || !document.getElementById('regNom').value) {
+            showError('Prénom et nom sont obligatoires.');
+            return;
+        }
+        hideMessages();
+        goTo(2);
+    });
+    document.getElementById('step3Back')?.addEventListener('click', () => goTo(1));
+
+    // Skills management
+    document.getElementById('addSkillBtn')?.addEventListener('click', () => {
+        const name  = document.getElementById('skillName').value.trim();
+        const type  = document.getElementById('skillType').value;
+        const level = parseInt(document.getElementById('skillLevel').value);
+        if (!name) return;
+
+        skills.push({ nom: name, type, niveau: level });
+        renderSkills();
+        document.getElementById('skillName').value = '';
+    });
+
+    function renderSkills() {
+        const container = document.getElementById('skillsPreview');
+        const empty     = document.getElementById('skillsEmpty');
+        const tags      = container.querySelectorAll('.skill-tag-removable');
+        tags.forEach(t => t.remove());
+
+        if (skills.length === 0) {
+            empty.style.display = '';
+            return;
+        }
+        empty.style.display = 'none';
+        skills.forEach((s, i) => {
+            const tag = document.createElement('span');
+            tag.className = 'skill-tag-removable ' + (s.type === 'teach' ? 'tag--teach' : 'tag--learn');
+            tag.innerHTML = `${s.nom} <small>(niv. ${s.niveau})</small> <button type="button" aria-label="Supprimer" onclick="removeSkill(${i})">×</button>`;
+            container.appendChild(tag);
+        });
+    }
+
+    window.removeSkill = (i) => { skills.splice(i, 1); renderSkills(); };
+
+    document.getElementById('submitRegister')?.addEventListener('click', async () => {
+        const email  = document.getElementById('regEmail').value;
+        const pass   = document.getElementById('regPassword').value;
+        const nom    = document.getElementById('regNom').value;
+        const prenom = document.getElementById('regPrenom').value;
+        const btn    = document.getElementById('submitRegister');
+
+        btn.disabled = true;
+        btn.textContent = 'Création en cours…';
+
+        try {
+            const res = await fetch('/api/auth/register', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ email, password: pass, nom, prenom }),
+            });
+            const json = await res.json();
+
+            if (!json.success) {
+                showError(json.error || 'Erreur lors de l\'inscription.');
+                goTo(0);
+                return;
+            }
+
+            showSuccess('Compte créé ! Connectez-vous maintenant.');
+            setTimeout(() => window.location.href = '/login', 2000);
+        } catch (e) {
+            showError('Erreur réseau. Réessayez.');
+        } finally {
+            btn.disabled = false;
+            btn.textContent = 'Créer mon compte';
+        }
+    });
+
+    function showError(msg) {
+        const el = document.getElementById('registerError');
+        el.textContent = msg;
+        el.style.display = 'flex';
+        document.getElementById('registerSuccess').style.display = 'none';
+    }
+
+    function showSuccess(msg) {
+        const el = document.getElementById('registerSuccess');
+        el.textContent = msg;
+        el.style.display = 'flex';
+        document.getElementById('registerError').style.display = 'none';
+    }
+
+    function hideMessages() {
+        document.getElementById('registerError').style.display = 'none';
+        document.getElementById('registerSuccess').style.display = 'none';
+    }
+
+    // Password strength
+    document.getElementById('regPassword')?.addEventListener('input', function () {
+        const bar = document.getElementById('passwordStrength');
+        const v   = this.value;
+        let strength = 0;
+        if (v.length >= 8) strength++;
+        if (/[A-Z]/.test(v)) strength++;
+        if (/[0-9]/.test(v)) strength++;
+        if (/[^A-Za-z0-9]/.test(v)) strength++;
+        const labels = ['', 'Faible', 'Moyen', 'Fort', 'Très fort'];
+        const classes = ['', 'strength--weak', 'strength--medium', 'strength--strong', 'strength--vstrong'];
+        bar.className = 'password-strength ' + (classes[strength] || '');
+        bar.textContent = labels[strength] || '';
+    });
+
+    // Toggle passwords
+    document.querySelectorAll('.input-toggle-password').forEach(btn => {
+        btn.addEventListener('click', () => {
+            const input = btn.previousElementSibling;
+            input.type = input.type === 'password' ? 'text' : 'password';
+        });
+    });
+</script>
+{% endblock %}

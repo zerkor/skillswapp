@@ -1,0 +1,9 @@
+twig:
+    file_name_pattern: '*.twig'
+    globals:
+        app_name: 'SkillSwap'
+        app_tagline: 'Le site qui connecte les étudiants par leurs compétences'
+
+when@test:
+    twig:
+        strict_variables: true

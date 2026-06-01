@@ -1,0 +1,111 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Rechercher — SkillSwap{% endblock %}
+{% block body_class %}page-search{% endblock %}
+
+{% block stylesheets %}
+    <link rel="stylesheet" href="/css/pages/search.css">
+{% endblock %}
+
+{% block body %}
+<div class="search-hero">
+    <div class="container">
+        <h1 class="search-hero-title">Trouvez votre tuteur idéal</h1>
+        <p class="search-hero-subtitle">Recherchez par compétence, filtrez par niveau et disponibilité.</p>
+
+        <div class="search-bar-wrapper">
+            <div class="search-bar">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" class="search-icon" aria-hidden="true"><circle cx="11" cy="11" r="8" stroke="currentColor" stroke-width="2"/><path d="M21 21l-4.35-4.35" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+                <input
+                    type="search"
+                    id="searchInput"
+                    class="input-field search-input"
+                    placeholder="Python, Photoshop, Anglais, Maths..."
+                    autocomplete="off"
+                    aria-label="Rechercher une compétence"
+                >
+                <button class="btn btn-primary" id="searchBtn">Rechercher</button>
+            </div>
+
+            <div class="search-filters">
+                <div class="filter-group">
+                    <label class="input-label" for="filterLevel">Niveau min.</label>
+                    <select id="filterLevel" class="input-field input-field--sm">
+                        <option value="0">Tous niveaux</option>
+                        <option value="1">Débutant (1)</option>
+                        <option value="2">Intermédiaire (2)</option>
+                        <option value="3">Avancé (3)</option>
+                        <option value="4">Expert (4)</option>
+                    </select>
+                </div>
+                <label class="checkbox-label filter-available">
+                    <input type="checkbox" id="filterAvailable">
+                    <span>Disponible maintenant</span>
+                </label>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="container search-results-section">
+    <div id="searchMeta" class="search-meta" style="display:none">
+        <span id="searchCount"></span>
+        <span id="searchQuery"></span>
+    </div>
+
+    <div id="searchLoader" class="search-loader" style="display:none" aria-live="polite" aria-label="Chargement en cours">
+        <div class="spinner"></div>
+        <span>Recherche en cours…</span>
+    </div>
+
+    <div id="searchResults" class="search-results-grid" role="list" aria-live="polite"></div>
+
+    <div id="searchEmpty" class="search-empty" style="display:none">
+        <div class="empty-illustration" aria-hidden="true">🔍</div>
+        <h3>Aucun résultat</h3>
+        <p>Essayez un autre terme ou réduisez les filtres.</p>
+        <button class="btn btn-secondary" id="clearSearch">Effacer la recherche</button>
+    </div>
+
+    <div id="searchInitial" class="search-initial">
+        <div class="search-initial-icon" aria-hidden="true">
+            <svg width="64" height="64" viewBox="0 0 24 24" fill="none"><circle cx="11" cy="11" r="8" stroke="var(--color-primary-light)" stroke-width="1.5"/><path d="M21 21l-4.35-4.35" stroke="var(--color-primary-light)" stroke-width="1.5" stroke-linecap="round"/></svg>
+        </div>
+        <p>Tapez une compétence pour commencer votre recherche</p>
+    </div>
+</div>
+
+{# Template de card résultat (cloné par JS) #}
+<template id="resultCardTemplate">
+    <article class="result-card card card-hover" role="listitem">
+        <div class="result-card-header">
+            <div class="result-avatar-wrap">
+                <img class="avatar avatar-lg result-avatar" src="" alt="" loading="lazy">
+                <div class="avatar avatar-lg avatar-placeholder result-avatar-placeholder" aria-hidden="true"></div>
+            </div>
+            <div class="result-score-ring" aria-label="">
+                <svg viewBox="0 0 36 36" class="score-ring-svg">
+                    <path class="score-ring-bg" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke-width="3"/>
+                    <path class="score-ring-fill" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke-width="3" stroke-dasharray="0, 100"/>
+                </svg>
+                <span class="score-ring-value"></span>
+            </div>
+        </div>
+        <div class="result-card-body">
+            <h3 class="result-name"></h3>
+            <p class="result-formation"></p>
+            <div class="result-matched-skill">
+                <span class="tag-skill result-skill-tag"></span>
+            </div>
+            <div class="result-niveau"></div>
+            <div class="result-slots"></div>
+        </div>
+        <div class="result-card-footer">
+            <a href="#" class="btn btn-secondary btn-sm result-profile-link">Voir le profil</a>
+            <a href="#" class="btn btn-primary btn-sm result-session-link">Proposer session</a>
+        </div>
+    </article>
+</template>
+
+<script src="/js/search.js"></script>
+{% endblock %}

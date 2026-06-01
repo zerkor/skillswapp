@@ -1,0 +1,227 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}{{ profile.fullName }} — SkillSwap{% endblock %}
+{% block body_class %}page-profile{% endblock %}
+
+{% block stylesheets %}
+    <link rel="stylesheet" href="/css/pages/profile.css">
+{% endblock %}
+
+{% block body %}
+<div class="container profile-layout">
+
+    {# ══ HEADER PROFIL ══ #}
+    <section class="profile-header card" aria-label="Informations du profil">
+        <div class="profile-header-bg" aria-hidden="true"></div>
+        <div class="profile-header-content">
+            <div class="profile-avatar-wrap">
+                {% if profile.photo %}
+                    <img src="{{ profile.photo }}" alt="{{ profile.fullName }}" class="avatar avatar-xl">
+                {% else %}
+                    <div class="avatar avatar-xl avatar-placeholder avatar-placeholder--lg">
+                        {{ profile.prenom|slice(0,1) }}{{ profile.nom|slice(0,1) }}
+                    </div>
+                {% endif %}
+                {% if isSelf %}
+                    <label class="avatar-edit-btn" for="avatarInput" title="Changer la photo">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+                    </label>
+                    <input type="file" id="avatarInput" accept="image/*" style="display:none">
+                {% endif %}
+            </div>
+
+            <div class="profile-info">
+                <h1 class="profile-name">{{ profile.fullName }}</h1>
+                {% if profile.formation %}
+                    <p class="profile-formation">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M22 10v6M2 10l10-5 10 5-10 5z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                        {{ profile.formation }}{% if profile.promotion %} — Promo {{ profile.promotion }}{% endif %}
+                    </p>
+                {% endif %}
+                {% if profile.bio %}
+                    <p class="profile-bio">{{ profile.bio }}</p>
+                {% endif %}
+                <div class="profile-meta">
+                    <div class="profile-score-display">
+                        <span class="score-value">{{ profile.score }}</span>
+                        <span class="score-label">pts</span>
+                    </div>
+                    <span class="badge-niveau {{ profile.niveau }}">{{ profile.niveau|capitalize }}</span>
+                    <span class="profile-joined">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><rect x="3" y="4" width="18" height="18" rx="2" stroke="currentColor" stroke-width="2"/><path d="M16 2v4M8 2v4M3 10h18" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+                        Membre depuis {{ profile.createdAt|date('M Y') }}
+                    </span>
+                </div>
+            </div>
+
+            <div class="profile-actions">
+                {% if isSelf %}
+                    <a href="{{ path('app_profile_edit') }}" class="btn btn-secondary">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+                        Modifier
+                    </a>
+                {% else %}
+                    <a href="{{ path('app_sessions_new') }}?tuteur={{ profile.id }}" class="btn btn-primary">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><rect x="3" y="4" width="18" height="18" rx="2" stroke="currentColor" stroke-width="2"/><path d="M12 8v4l3 3" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+                        Proposer une session
+                    </a>
+                {% endif %}
+            </div>
+        </div>
+
+        {# Barre de progression niveau #}
+        <div class="level-progress-bar" aria-label="Progression vers le niveau suivant">
+            <div class="level-progress-info">
+                <span>{{ profile.niveau|capitalize }}</span>
+                {% if nextLevel %}
+                    <span class="level-progress-pts">{{ profile.score }} / {{ nextLevel }} pts</span>
+                {% else %}
+                    <span class="level-progress-pts">Niveau maximum atteint !</span>
+                {% endif %}
+            </div>
+            <div class="progress-bar">
+                <div class="progress-fill" style="width: {{ (progress * 100)|round }}%" role="progressbar" aria-valuenow="{{ (progress * 100)|round }}" aria-valuemin="0" aria-valuemax="100"></div>
+            </div>
+        </div>
+    </section>
+
+    <div class="profile-body">
+        <div class="profile-main">
+
+            {# ══ COMPÉTENCES ══ #}
+            <section class="card profile-section" aria-labelledby="skills-title">
+                <h2 id="skills-title" class="section-title-sm">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                    Compétences
+                </h2>
+
+                {% set teachSkills = profile.skills|filter(s => s.type == 'teach') %}
+                {% set learnSkills = profile.skills|filter(s => s.type == 'learn') %}
+
+                {% if teachSkills|length > 0 %}
+                    <div class="skills-group">
+                        <h3 class="skills-group-title skills-group-title--teach">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M22 10v6M2 10l10-5 10 5-10 5z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                            J'enseigne
+                        </h3>
+                        <div class="skills-grid">
+                            {% for skill in teachSkills %}
+                                <div class="skill-card skill-card--teach">
+                                    <span class="skill-name">{{ skill.nom }}</span>
+                                    {% if skill.categorie %}<span class="skill-cat">{{ skill.categorie }}</span>{% endif %}
+                                    <div class="skill-stars" aria-label="Niveau {{ skill.niveau }} sur 4">
+                                        {% for i in 1..4 %}
+                                            <svg width="14" height="14" viewBox="0 0 24 24" class="{{ i <= skill.niveau ? 'star--filled' : 'star--empty' }}">
+                                                <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" {% if i <= skill.niveau %}fill="currentColor"{% endif %} stroke="currentColor" stroke-width="1.5"/>
+                                            </svg>
+                                        {% endfor %}
+                                    </div>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                {% endif %}
+
+                {% if learnSkills|length > 0 %}
+                    <div class="skills-group">
+                        <h3 class="skills-group-title skills-group-title--learn">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                            J'apprends
+                        </h3>
+                        <div class="skills-grid">
+                            {% for skill in learnSkills %}
+                                <div class="skill-card skill-card--learn">
+                                    <span class="skill-name">{{ skill.nom }}</span>
+                                    {% if skill.categorie %}<span class="skill-cat">{{ skill.categorie }}</span>{% endif %}
+                                    <div class="skill-stars" aria-label="Niveau {{ skill.niveau }} sur 4">
+                                        {% for i in 1..4 %}
+                                            <svg width="14" height="14" viewBox="0 0 24 24" class="{{ i <= skill.niveau ? 'star--filled' : 'star--empty' }}">
+                                                <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" {% if i <= skill.niveau %}fill="currentColor"{% endif %} stroke="currentColor" stroke-width="1.5"/>
+                                            </svg>
+                                        {% endfor %}
+                                    </div>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                {% endif %}
+
+                {% if profile.skills|length == 0 %}
+                    <p class="empty-state">Aucune compétence renseignée.</p>
+                {% endif %}
+            </section>
+
+            {# ══ DISPONIBILITÉS ══ #}
+            <section class="card profile-section" aria-labelledby="avail-title">
+                <h2 id="avail-title" class="section-title-sm">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><rect x="3" y="4" width="18" height="18" rx="2" stroke="currentColor" stroke-width="2"/><path d="M16 2v4M8 2v4M3 10h18" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+                    Disponibilités
+                </h2>
+                <div class="availability-grid">
+                    {% set jours = ['lun', 'mar', 'mer', 'jeu', 'ven', 'sam', 'dim'] %}
+                    {% set joursLabels = {'lun': 'Lun', 'mar': 'Mar', 'mer': 'Mer', 'jeu': 'Jeu', 'ven': 'Ven', 'sam': 'Sam', 'dim': 'Dim'} %}
+                    {% for jour in jours %}
+                        {% set dayAvails = profile.availabilities|filter(a => a.jourSemaine == jour) %}
+                        <div class="avail-day {{ dayAvails|length > 0 ? 'avail-day--active' : '' }}">
+                            <span class="avail-day-name">{{ joursLabels[jour] }}</span>
+                            {% for avail in dayAvails %}
+                                <span class="avail-slot">{{ avail.heureDebut|date('H:i') }}–{{ avail.heureFin|date('H:i') }}</span>
+                            {% else %}
+                                <span class="avail-empty">—</span>
+                            {% endfor %}
+                        </div>
+                    {% endfor %}
+                </div>
+            </section>
+
+        </div>
+
+        <div class="profile-sidebar">
+
+            {# ══ BADGES ══ #}
+            <section class="card profile-section" aria-labelledby="badges-title">
+                <h2 id="badges-title" class="section-title-sm">
+                    🏆 Badges
+                </h2>
+                {% if profile.userBadges|length > 0 %}
+                    <div class="badges-grid">
+                        {% for userBadge in profile.userBadges %}
+                            <div class="badge-item" title="{{ userBadge.badge.description }}">
+                                <span class="badge-icone">{{ userBadge.badge.icone }}</span>
+                                <span class="badge-name">{{ userBadge.badge.nom }}</span>
+                                <span class="badge-date">{{ userBadge.obtainedAt|date('d/m/Y') }}</span>
+                            </div>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <p class="empty-state">Aucun badge pour l'instant.</p>
+                {% endif %}
+            </section>
+
+            {# ══ SESSIONS RÉCENTES ══ #}
+            <section class="card profile-section" aria-labelledby="sessions-title">
+                <h2 id="sessions-title" class="section-title-sm">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><rect x="3" y="4" width="18" height="18" rx="2" stroke="currentColor" stroke-width="2"/><path d="M12 8v4l3 3" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+                    Sessions récentes
+                </h2>
+                {% set sessions = profile.sessionsAsTutor|merge(profile.sessionsAsLearner|slice(0,5)) %}
+                {% if sessions|length > 0 %}
+                    <ul class="sessions-list-mini">
+                        {% for session in sessions|slice(0, 5) %}
+                            <li class="session-mini">
+                                <span class="session-mini-comp">{{ session.competence }}</span>
+                                <span class="statut-badge statut-badge--{{ session.statut }}">{{ session.statut }}</span>
+                            </li>
+                        {% endfor %}
+                    </ul>
+                {% else %}
+                    <p class="empty-state">Aucune session.</p>
+                {% endif %}
+            </section>
+
+        </div>
+    </div>
+</div>
+
+<script src="/js/profile.js"></script>
+{% endblock %}

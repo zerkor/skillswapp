@@ -1,0 +1,207 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}SkillSwap — Connecte tes compétences{% endblock %}
+{% block body_class %}page-home{% endblock %}
+
+{% block stylesheets %}
+    <link rel="stylesheet" href="/css/pages/home.css">
+{% endblock %}
+
+{% block body %}
+
+{# ══════ HERO ══════ #}
+<section class="hero" aria-labelledby="hero-title">
+    <div class="container hero-inner">
+        <div class="hero-content">
+            <div class="hero-badge">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" fill="currentColor"/></svg>
+                Plateforme étudiante #1
+            </div>
+            <h1 id="hero-title" class="hero-title">
+                Échange tes<br>
+                <span class="text-gradient">compétences</span><br>
+                avec tes pairs
+            </h1>
+            <p class="hero-subtitle">
+                SkillSwap connecte les étudiants qui veulent apprendre avec ceux qui savent. Trouve ton tuteur idéal, propose tes compétences, progresse ensemble.
+            </p>
+            <div class="hero-cta">
+                {% if not app.user %}
+                    <a href="{{ path('app_register') }}" class="btn btn-primary btn-lg">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><circle cx="9" cy="7" r="4" stroke="currentColor" stroke-width="2"/><line x1="19" y1="8" x2="19" y2="14" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><line x1="22" y1="11" x2="16" y2="11" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+                        S'inscrire gratuitement
+                    </a>
+                    <a href="{{ path('app_search') }}" class="btn btn-secondary btn-lg">
+                        Découvrir les profils
+                    </a>
+                {% else %}
+                    <a href="{{ path('app_search') }}" class="btn btn-primary btn-lg">
+                        Trouver un tuteur
+                    </a>
+                    <a href="{{ path('app_feed') }}" class="btn btn-secondary btn-lg">
+                        Voir le feed
+                    </a>
+                {% endif %}
+            </div>
+        </div>
+
+        <div class="hero-visual" aria-hidden="true">
+            <div class="hero-shape hero-shape--1"></div>
+            <div class="hero-shape hero-shape--2"></div>
+            <div class="hero-shape hero-shape--3"></div>
+            <div class="hero-card-float hero-card-float--1">
+                <div class="avatar avatar-md avatar-placeholder">AS</div>
+                <div>
+                    <div class="hero-card-name">Alexandre S.</div>
+                    <div class="tag-skill">Python</div>
+                </div>
+            </div>
+            <div class="hero-card-float hero-card-float--2">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" stroke="#10B981" stroke-width="2" stroke-linecap="round"/><polyline points="22 4 12 14.01 9 11.01" stroke="#10B981" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                <span>Session confirmée !</span>
+            </div>
+            <div class="hero-card-float hero-card-float--3">
+                <span class="badge-niveau legende">Légende</span>
+                <span>1 850 pts</span>
+            </div>
+        </div>
+    </div>
+</section>
+
+{# ══════ STATS ══════ #}
+<section class="stats-section" aria-label="Chiffres clés">
+    <div class="container stats-grid">
+        <div class="stat-card">
+            <div class="stat-value">{{ stats.users|number_format(0, ',', ' ') }}+</div>
+            <div class="stat-label">Étudiants inscrits</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-value">{{ stats.sessions|number_format(0, ',', ' ') }}+</div>
+            <div class="stat-label">Sessions réalisées</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-value">{{ stats.skills|number_format(0, ',', ' ') }}+</div>
+            <div class="stat-label">Compétences partagées</div>
+        </div>
+    </div>
+</section>
+
+{# ══════ FONCTIONNALITÉS ══════ #}
+<section class="features-section" aria-labelledby="features-title">
+    <div class="container">
+        <div class="section-header">
+            <h2 id="features-title" class="section-title">Tout pour apprendre ensemble</h2>
+            <p class="section-subtitle">SkillSwap offre tous les outils pour organiser des échanges de compétences entre étudiants.</p>
+        </div>
+
+        <div class="features-grid">
+            <div class="feature-card card card-hover">
+                <div class="feature-icon feature-icon--blue">
+                    <svg width="28" height="28" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="8" r="4" stroke="currentColor" stroke-width="2"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+                </div>
+                <h3>Profil étudiant</h3>
+                <p>Présentez vos compétences à enseigner et celles que vous souhaitez apprendre. Ajoutez votre formation, promotion et bio.</p>
+            </div>
+
+            <div class="feature-card card card-hover">
+                <div class="feature-icon feature-icon--cyan">
+                    <svg width="28" height="28" viewBox="0 0 24 24" fill="none"><circle cx="11" cy="11" r="8" stroke="currentColor" stroke-width="2"/><path d="M21 21l-4.35-4.35" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+                </div>
+                <h3>Matching intelligent</h3>
+                <p>Notre algorithme trouve les meilleures correspondances selon vos compétences, disponibilités et réputation.</p>
+            </div>
+
+            <div class="feature-card card card-hover">
+                <div class="feature-icon feature-icon--green">
+                    <svg width="28" height="28" viewBox="0 0 24 24" fill="none"><rect x="3" y="4" width="18" height="18" rx="2" stroke="currentColor" stroke-width="2"/><path d="M16 2v4M8 2v4M3 10h18" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+                </div>
+                <h3>Gestion des sessions</h3>
+                <p>Proposez, confirmez et suivez vos cours rapides, ateliers ou clubs. Évaluez vos partenaires après chaque session.</p>
+            </div>
+
+            <div class="feature-card card card-hover">
+                <div class="feature-icon feature-icon--purple">
+                    <svg width="28" height="28" viewBox="0 0 24 24" fill="none"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                </div>
+                <h3>Gamification</h3>
+                <p>Gagnez des points, débloquez des badges et progressez de Novice à Légende. Le classement général motive tout le monde.</p>
+            </div>
+
+            <div class="feature-card card card-hover">
+                <div class="feature-icon feature-icon--amber">
+                    <svg width="28" height="28" viewBox="0 0 24 24" fill="none"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                </div>
+                <h3>Feed communautaire</h3>
+                <p>Partagez vos apprentissages, likez les posts, commentez. Restez connecté à la communauté SkillSwap.</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+{# ══════ NIVEAUX ══════ #}
+<section class="levels-section" aria-labelledby="levels-title">
+    <div class="container">
+        <div class="section-header">
+            <h2 id="levels-title" class="section-title">Progressez niveau par niveau</h2>
+            <p class="section-subtitle">Chaque session vous rapproche du statut Légende.</p>
+        </div>
+
+        <div class="levels-timeline">
+            <div class="level-item">
+                <div class="level-dot level-dot--novice"></div>
+                <div class="level-content">
+                    <span class="badge-niveau novice">Novice</span>
+                    <p>0 pts — Débutez l'aventure</p>
+                </div>
+            </div>
+            <div class="level-connector"></div>
+            <div class="level-item">
+                <div class="level-dot level-dot--apprenti"></div>
+                <div class="level-content">
+                    <span class="badge-niveau apprenti">Apprenti</span>
+                    <p>101 pts — Vos premières sessions</p>
+                </div>
+            </div>
+            <div class="level-connector"></div>
+            <div class="level-item">
+                <div class="level-dot level-dot--mentor"></div>
+                <div class="level-content">
+                    <span class="badge-niveau mentor">Mentor</span>
+                    <p>301 pts — Vous guidez les autres</p>
+                </div>
+            </div>
+            <div class="level-connector"></div>
+            <div class="level-item">
+                <div class="level-dot level-dot--expert"></div>
+                <div class="level-content">
+                    <span class="badge-niveau expert">Expert</span>
+                    <p>701 pts — Référence reconnue</p>
+                </div>
+            </div>
+            <div class="level-connector"></div>
+            <div class="level-item">
+                <div class="level-dot level-dot--legende"></div>
+                <div class="level-content">
+                    <span class="badge-niveau legende">Légende</span>
+                    <p>1500 pts — Le sommet de la communauté</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+{# ══════ CTA FINAL ══════ #}
+{% if not app.user %}
+<section class="cta-section" aria-labelledby="cta-title">
+    <div class="container cta-inner">
+        <h2 id="cta-title">Prêt à échanger tes compétences ?</h2>
+        <p>Rejoins des milliers d'étudiants qui apprennent et enseignent ensemble.</p>
+        <a href="{{ path('app_register') }}" class="btn btn-accent btn-lg">
+            Créer mon compte gratuitement
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M5 12h14M12 5l7 7-7 7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </a>
+    </div>
+</section>
+{% endif %}
+
+{% endblock %}

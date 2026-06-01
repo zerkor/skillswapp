@@ -1,0 +1,132 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Classement — SkillSwap{% endblock %}
+{% block body_class %}page-leaderboard{% endblock %}
+
+{% block stylesheets %}
+    <link rel="stylesheet" href="/css/pages/feed.css">
+{% endblock %}
+
+{% block body %}
+<div class="container" style="padding: var(--spacing-8) var(--container-padding);">
+
+    <div class="page-header" style="text-align:center; margin-bottom:var(--spacing-12);">
+        <h1>Classement général</h1>
+        <p style="color:var(--color-text-muted);">Les meilleurs contributeurs de la communauté SkillSwap</p>
+    </div>
+
+    {# ════ PODIUM TOP 3 ════ #}
+    {% if users|length >= 3 %}
+    <div class="podium" aria-label="Top 3">
+        <div class="podium-place podium-place--2" aria-label="2ème place">
+            <div class="podium-avatar-wrap">
+                {% if users[1].photo %}
+                    <img src="{{ users[1].photo }}" alt="{{ users[1].fullName }}" class="avatar avatar-xl">
+                {% else %}
+                    <div class="avatar avatar-xl avatar-placeholder">{{ users[1].prenom|slice(0,1) }}{{ users[1].nom|slice(0,1) }}</div>
+                {% endif %}
+                <span class="podium-medal podium-medal--silver" aria-hidden="true">🥈</span>
+            </div>
+            <a href="{{ path('app_profile_show', {id: users[1].id}) }}" class="podium-name">{{ users[1].fullName }}</a>
+            <span class="podium-score">{{ users[1].score }} pts</span>
+            <span class="badge-niveau {{ users[1].niveau }}">{{ users[1].niveau|capitalize }}</span>
+            <div class="podium-bar podium-bar--2" aria-hidden="true"></div>
+        </div>
+
+        <div class="podium-place podium-place--1" aria-label="1ère place">
+            <div class="podium-crown" aria-hidden="true">👑</div>
+            <div class="podium-avatar-wrap">
+                {% if users[0].photo %}
+                    <img src="{{ users[0].photo }}" alt="{{ users[0].fullName }}" class="avatar avatar-xl">
+                {% else %}
+                    <div class="avatar avatar-xl avatar-placeholder">{{ users[0].prenom|slice(0,1) }}{{ users[0].nom|slice(0,1) }}</div>
+                {% endif %}
+                <span class="podium-medal podium-medal--gold" aria-hidden="true">🥇</span>
+            </div>
+            <a href="{{ path('app_profile_show', {id: users[0].id}) }}" class="podium-name">{{ users[0].fullName }}</a>
+            <span class="podium-score">{{ users[0].score }} pts</span>
+            <span class="badge-niveau {{ users[0].niveau }}">{{ users[0].niveau|capitalize }}</span>
+            <div class="podium-bar podium-bar--1" aria-hidden="true"></div>
+        </div>
+
+        <div class="podium-place podium-place--3" aria-label="3ème place">
+            <div class="podium-avatar-wrap">
+                {% if users[2].photo %}
+                    <img src="{{ users[2].photo }}" alt="{{ users[2].fullName }}" class="avatar avatar-xl">
+                {% else %}
+                    <div class="avatar avatar-xl avatar-placeholder">{{ users[2].prenom|slice(0,1) }}{{ users[2].nom|slice(0,1) }}</div>
+                {% endif %}
+                <span class="podium-medal podium-medal--bronze" aria-hidden="true">🥉</span>
+            </div>
+            <a href="{{ path('app_profile_show', {id: users[2].id}) }}" class="podium-name">{{ users[2].fullName }}</a>
+            <span class="podium-score">{{ users[2].score }} pts</span>
+            <span class="badge-niveau {{ users[2].niveau }}">{{ users[2].niveau|capitalize }}</span>
+            <div class="podium-bar podium-bar--3" aria-hidden="true"></div>
+        </div>
+    </div>
+    {% endif %}
+
+    {# ════ TABLEAU CLASSEMENT ════ #}
+    <div class="card leaderboard-table-wrapper">
+        <table class="leaderboard-table" aria-label="Classement complet">
+            <thead>
+                <tr>
+                    <th scope="col">Rang</th>
+                    <th scope="col">Étudiant</th>
+                    <th scope="col">Niveau</th>
+                    <th scope="col">Badges</th>
+                    <th scope="col">Score</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for user in users %}
+                    <tr class="leaderboard-row {% if app.user and app.user.id == user.id %}leaderboard-row--self{% endif %}">
+                        <td class="rank-cell">
+                            {% if loop.index == 1 %}
+                                <span class="rank-badge rank-badge--gold">1</span>
+                            {% elseif loop.index == 2 %}
+                                <span class="rank-badge rank-badge--silver">2</span>
+                            {% elseif loop.index == 3 %}
+                                <span class="rank-badge rank-badge--bronze">3</span>
+                            {% else %}
+                                <span class="rank-badge">{{ loop.index }}</span>
+                            {% endif %}
+                        </td>
+                        <td class="user-cell">
+                            <a href="{{ path('app_profile_show', {id: user.id}) }}" class="user-cell-link">
+                                {% if user.photo %}
+                                    <img src="{{ user.photo }}" alt="{{ user.fullName }}" class="avatar avatar-sm">
+                                {% else %}
+                                    <div class="avatar avatar-sm avatar-placeholder">{{ user.prenom|slice(0,1) }}{{ user.nom|slice(0,1) }}</div>
+                                {% endif %}
+                                <div>
+                                    <span class="user-name">{{ user.fullName }}</span>
+                                    {% if user.formation %}
+                                        <span class="user-formation">{{ user.formation }}</span>
+                                    {% endif %}
+                                </div>
+                            </a>
+                        </td>
+                        <td><span class="badge-niveau {{ user.niveau }}">{{ user.niveau|capitalize }}</span></td>
+                        <td class="badges-cell">
+                            {% for userBadge in user.userBadges|slice(0, 4) %}
+                                <span title="{{ userBadge.badge.nom }}">{{ userBadge.badge.icone }}</span>
+                            {% endfor %}
+                        </td>
+                        <td class="score-cell">
+                            <span class="score-value">{{ user.score|number_format(0, ',', ' ') }}</span>
+                            <span class="score-unit">pts</span>
+                        </td>
+                    </tr>
+                {% else %}
+                    <tr>
+                        <td colspan="5" class="empty-state" style="text-align:center;padding:var(--spacing-12);">
+                            Aucun utilisateur inscrit.
+                        </td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

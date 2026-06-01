@@ -1,0 +1,164 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Modifier mon profil — SkillSwap{% endblock %}
+{% block body_class %}page-profile-edit{% endblock %}
+
+{% block stylesheets %}
+    <link rel="stylesheet" href="/css/pages/profile.css">
+{% endblock %}
+
+{% block body %}
+<div class="container" style="max-width:760px; padding: var(--spacing-8) var(--container-padding);">
+
+    <div class="page-header">
+        <a href="{{ path('app_profile_show', {id: app.user.id}) }}" class="btn btn-ghost btn-sm">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M19 12H5M12 19l-7-7 7-7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            Retour au profil
+        </a>
+        <h1>Modifier mon profil</h1>
+    </div>
+
+    <div id="editAlert" class="alert" role="alert" style="display:none"></div>
+
+    <div class="card" style="padding: var(--spacing-8);">
+        <h2 class="section-title-sm" style="margin-bottom:var(--spacing-6)">Informations personnelles</h2>
+
+        <div class="input-row">
+            <div class="input-group">
+                <label class="input-label" for="editPrenom">Prénom</label>
+                <input type="text" id="editPrenom" class="input-field" value="{{ user.prenom }}" required>
+            </div>
+            <div class="input-group">
+                <label class="input-label" for="editNom">Nom</label>
+                <input type="text" id="editNom" class="input-field" value="{{ user.nom }}" required>
+            </div>
+        </div>
+        <div class="input-group">
+            <label class="input-label" for="editFormation">Formation</label>
+            <input type="text" id="editFormation" class="input-field" value="{{ user.formation ?? '' }}" placeholder="ex: Master Informatique">
+        </div>
+        <div class="input-group">
+            <label class="input-label" for="editPromotion">Promotion</label>
+            <input type="text" id="editPromotion" class="input-field" value="{{ user.promotion ?? '' }}" placeholder="ex: 2025">
+        </div>
+        <div class="input-group">
+            <label class="input-label" for="editBio">Bio</label>
+            <textarea id="editBio" class="input-field" rows="4" maxlength="500" placeholder="Parlez-vous en quelques mots...">{{ user.bio ?? '' }}</textarea>
+        </div>
+
+        <div style="display:flex; gap:var(--spacing-3); justify-content:flex-end; margin-top:var(--spacing-6);">
+            <a href="{{ path('app_profile_show', {id: user.id}) }}" class="btn btn-ghost">Annuler</a>
+            <button type="button" class="btn btn-primary" id="saveProfile">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><polyline points="17 21 17 13 7 13 7 21" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><polyline points="7 3 7 8 15 8" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                Enregistrer
+            </button>
+        </div>
+    </div>
+
+    {# Compétences #}
+    <div class="card" style="padding: var(--spacing-8); margin-top:var(--spacing-6);">
+        <h2 class="section-title-sm" style="margin-bottom:var(--spacing-6)">Mes compétences</h2>
+
+        <div id="skillsList" class="skills-edit-list">
+            {% for skill in user.skills %}
+                <div class="skill-edit-item" data-id="{{ skill.id }}">
+                    <span class="tag-skill tag-skill--{{ skill.type }}">{{ skill.nom }}</span>
+                    <span class="skill-edit-meta">{{ skill.type == 'teach' ? 'Enseigne' : 'Apprend' }} — niv. {{ skill.niveau }}</span>
+                    <button type="button" class="btn btn-danger btn-sm skill-delete-btn" data-id="{{ skill.id }}" aria-label="Supprimer {{ skill.nom }}">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><polyline points="3 6 5 6 21 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                    </button>
+                </div>
+            {% else %}
+                <p class="empty-state" id="noSkillsMsg">Aucune compétence.</p>
+            {% endfor %}
+        </div>
+
+        <div class="skill-add-form" style="margin-top:var(--spacing-6);">
+            <div class="input-row">
+                <div class="input-group input-group--grow">
+                    <label class="input-label" for="newSkillName">Nouvelle compétence</label>
+                    <input type="text" id="newSkillName" class="input-field" placeholder="ex: Python">
+                </div>
+                <div class="input-group">
+                    <label class="input-label" for="newSkillType">Type</label>
+                    <select id="newSkillType" class="input-field">
+                        <option value="teach">Enseigner</option>
+                        <option value="learn">Apprendre</option>
+                    </select>
+                </div>
+                <div class="input-group">
+                    <label class="input-label" for="newSkillLevel">Niveau</label>
+                    <select id="newSkillLevel" class="input-field">
+                        <option value="1">Débutant</option>
+                        <option value="2">Intermédiaire</option>
+                        <option value="3">Avancé</option>
+                        <option value="4">Expert</option>
+                    </select>
+                </div>
+            </div>
+            <button type="button" class="btn btn-accent btn-sm" id="addNewSkill">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><line x1="12" y1="5" x2="12" y2="19" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><line x1="5" y1="12" x2="19" y2="12" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+                Ajouter
+            </button>
+        </div>
+    </div>
+
+</div>
+
+<script src="/js/profile.js"></script>
+<script>
+    const userId = {{ user.id }};
+
+    document.getElementById('saveProfile')?.addEventListener('click', async () => {
+        const body = {
+            nom:       document.getElementById('editNom').value,
+            prenom:    document.getElementById('editPrenom').value,
+            formation: document.getElementById('editFormation').value,
+            promotion: document.getElementById('editPromotion').value,
+            bio:       document.getElementById('editBio').value,
+        };
+        const res  = await apiFetch(`/api/users/${userId}`, { method: 'PUT', body: JSON.stringify(body) });
+        const json = await res.json();
+        showEditAlert(json.success ? 'success' : 'error', json.success ? 'Profil mis à jour !' : json.error);
+    });
+
+    document.getElementById('addNewSkill')?.addEventListener('click', async () => {
+        const body = {
+            nom:       document.getElementById('newSkillName').value.trim(),
+            type:      document.getElementById('newSkillType').value,
+            niveau:    parseInt(document.getElementById('newSkillLevel').value),
+            categorie: '',
+        };
+        if (!body.nom) return;
+        const res  = await apiFetch('/api/skills', { method: 'POST', body: JSON.stringify(body) });
+        const json = await res.json();
+        if (json.success) {
+            location.reload();
+        } else {
+            showEditAlert('error', json.error);
+        }
+    });
+
+    document.querySelectorAll('.skill-delete-btn').forEach(btn => {
+        btn.addEventListener('click', async () => {
+            const id = btn.dataset.id;
+            if (!confirm('Supprimer cette compétence ?')) return;
+            const res  = await apiFetch(`/api/skills/${id}`, { method: 'DELETE' });
+            const json = await res.json();
+            if (json.success) {
+                btn.closest('.skill-edit-item').remove();
+            } else {
+                showEditAlert('error', json.error);
+            }
+        });
+    });
+
+    function showEditAlert(type, msg) {
+        const el = document.getElementById('editAlert');
+        el.className = `alert alert-${type}`;
+        el.textContent = msg;
+        el.style.display = 'flex';
+        setTimeout(() => el.style.display = 'none', 4000);
+    }
+</script>
+{% endblock %}
