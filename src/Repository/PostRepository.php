@@ -41,4 +41,5 @@ class PostRepository extends ServiceEntityRepository
             ->getQuery()
             ->getSingleScalarResult();
     }
+
 }

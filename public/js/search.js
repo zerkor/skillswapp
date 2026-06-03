@@ -22,6 +22,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
   let debounceTimer;
 
+  // Charger tous les tuteurs au démarrage
+  performSearch('');
+
   // Auto-search on input
   searchInput.addEventListener('input', () => {
     clearTimeout(debounceTimer);
@@ -29,7 +32,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (q.length >= 2) {
       debounceTimer = setTimeout(() => performSearch(q), 400);
     } else if (q.length === 0) {
-      showInitial();
+      performSearch('');
     }
   });
 
@@ -48,7 +51,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   clearBtn?.addEventListener('click', () => {
     searchInput.value = '';
-    showInitial();
+    performSearch('');
   });
 
   async function performSearch(q) {
@@ -82,8 +85,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Update meta
     searchMeta.style.display = 'flex';
-    searchCount.textContent  = `${matches.length} résultat${matches.length > 1 ? 's' : ''}`;
-    searchQuery.textContent  = `pour "${query}"`;
+    searchCount.textContent  = `${matches.length} tuteur${matches.length > 1 ? 's' : ''}`;
+    searchQuery.textContent  = query ? `pour "${query}"` : 'disponibles';
 
     matches.forEach(match => {
       const card = createResultCard(match);

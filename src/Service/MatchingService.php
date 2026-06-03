@@ -56,6 +56,44 @@ class MatchingService
     }
 
     /**
+     * Retourne tous les tuteurs triés par score de réputation (page par défaut).
+     *
+     * @return array<array{user: User, score: float, matchedSkill: Skill, commonSlots: int}>
+     */
+    public function findAllTutors(User $seeker): array
+    {
+        $teachSkills = $this->skillRepository->findAllTeachSkills();
+        $maxScore    = $this->getMaxScore();
+        $seen        = [];
+        $results     = [];
+
+        foreach ($teachSkills as $teachSkill) {
+            $tutor = $teachSkill->getUser();
+            if ($tutor === null || $tutor->getId() === $seeker->getId()) {
+                continue;
+            }
+            if (isset($seen[$tutor->getId()])) {
+                continue;
+            }
+            $seen[$tutor->getId()] = true;
+
+            $reputScore = $this->computeReputationScore($tutor, $maxScore);
+            $slotScore  = $this->computeSlotScore($seeker, $tutor);
+
+            $results[] = [
+                'user'         => $tutor,
+                'score'        => round(($reputScore * 0.60) + ($slotScore * 0.40), 2),
+                'matchedSkill' => $teachSkill,
+                'commonSlots'  => $this->countCommonSlots($seeker, $tutor),
+            ];
+        }
+
+        usort($results, fn($a, $b) => $b['score'] <=> $a['score']);
+
+        return $results;
+    }
+
+    /**
      * Calcule le score de compatibilité entre deux utilisateurs.
      */
     private function computeScore(User $seeker, User $tutor, Skill $skill, int $requestedLevel, float $maxScore): float

@@ -329,7 +329,41 @@
   color: var(--color-text-muted);
 }
 
-.badges-cell { display: flex; gap: var(--spacing-1); flex-wrap: nowrap; font-size: 1.1rem; }
+.badges-cell { vertical-align: middle; }
+
+.badge-pills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: .3rem;
+}
+.badge-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: .25rem;
+  padding: .2rem .55rem;
+  border-radius: 999px;
+  background: #FEF3C7;
+  border: 1px solid #FCD34D;
+  font-size: .68rem;
+  font-weight: var(--font-semibold);
+  color: #92400E;
+  white-space: nowrap;
+  box-shadow: 0 1px 3px rgba(0,0,0,.07);
+  line-height: 1;
+}
+.badge-pill-icone { font-size: .8rem; line-height: 1; }
+.badge-pill-nom   { max-width: 90px; overflow: hidden; text-overflow: ellipsis; }
+.badge-pill--more {
+  background: var(--color-bg-alt);
+  border-color: var(--color-border);
+  color: var(--color-text-muted);
+  cursor: pointer;
+  text-decoration: none;
+}
+.badge-pill--more:hover {
+  background: var(--color-border);
+  color: var(--color-text);
+}
 
 .score-cell { white-space: nowrap; }
 .score-cell .score-value {
@@ -339,3 +373,45 @@
   color: var(--color-primary);
 }
 .score-unit { font-size: var(--text-xs); color: var(--color-text-muted); }
+
+/* ── SKILL TAGS (leaderboard) ── */
+.user-skills-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: .3rem;
+  margin-top: .35rem;
+}
+.skill-tag {
+  display: inline-flex;
+  align-items: center;
+  padding: .2rem .6rem;
+  border-radius: 999px;
+  font-size: .68rem;
+  font-weight: var(--font-semibold);
+  line-height: 1;
+  white-space: nowrap;
+  box-shadow: 0 1px 3px rgba(0,0,0,.08);
+  border: 1px solid transparent;
+}
+.skill-tag--teach {
+  background: #D1FAE5;
+  color: #065F46;
+  border-color: #6EE7B7;
+}
+.skill-tag--learn {
+  background: #DBEAFE;
+  color: #1E40AF;
+  border-color: #93C5FD;
+}
+.skill-tag--more {
+  background: var(--color-bg-alt);
+  color: var(--color-text-muted);
+  border-color: var(--color-border);
+  cursor: pointer;
+  letter-spacing: .03em;
+  text-decoration: none;
+}
+.skill-tag--more:hover {
+  background: var(--color-border);
+  color: var(--color-text);
+}

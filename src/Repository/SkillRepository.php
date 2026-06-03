@@ -66,4 +66,21 @@ class SkillRepository extends ServiceEntityRepository
             ->getQuery()
             ->getResult();
     }
+
+    /**
+     * Retourne toutes les compétences teach (une par user, la première).
+     *
+     * @return Skill[]
+     */
+    public function findAllTeachSkills(): array
+    {
+        return $this->createQueryBuilder('s')
+            ->join('s.user', 'u')
+            ->addSelect('u')
+            ->where('s.type = :type')
+            ->setParameter('type', Skill::TYPE_TEACH)
+            ->orderBy('u.score', 'DESC')
+            ->getQuery()
+            ->getResult();
+    }
 }

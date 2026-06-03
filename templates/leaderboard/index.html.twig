@@ -101,17 +101,36 @@
                                 {% endif %}
                                 <div>
                                     <span class="user-name">{{ user.fullName }}</span>
-                                    {% if user.formation %}
-                                        <span class="user-formation">{{ user.formation }}</span>
+                                    {% if user.skills|length > 0 %}
+                                        <div class="user-skills-tags">
+                                            {% for skill in user.skills|slice(0, 2) %}
+                                                <span class="skill-tag skill-tag--{{ skill.type }}">{{ skill.nom }}</span>
+                                            {% endfor %}
+                                            {% if user.skills|length > 2 %}
+                                                <a href="{{ path('app_profile_show', {id: user.id}) }}" class="skill-tag skill-tag--more" title="Voir toutes les compétences">+{{ user.skills|length - 2 }}</a>
+                                            {% endif %}
+                                        </div>
                                     {% endif %}
                                 </div>
                             </a>
                         </td>
                         <td><span class="badge-niveau {{ user.niveau }}">{{ user.niveau|capitalize }}</span></td>
                         <td class="badges-cell">
-                            {% for userBadge in user.userBadges|slice(0, 4) %}
-                                <span title="{{ userBadge.badge.nom }}">{{ userBadge.badge.icone }}</span>
-                            {% endfor %}
+                            {% if user.userBadges|length > 0 %}
+                                <div class="badge-pills">
+                                    {% for userBadge in user.userBadges|slice(0, 2) %}
+                                        <span class="badge-pill">
+                                            <span class="badge-pill-icone" aria-hidden="true">{{ userBadge.badge.icone }}</span>
+                                            <span class="badge-pill-nom">{{ userBadge.badge.nom }}</span>
+                                        </span>
+                                    {% endfor %}
+                                    {% if user.userBadges|length > 2 %}
+                                        <a href="{{ path('app_profile_show', {id: user.id}) }}" class="badge-pill badge-pill--more" title="Voir tous les badges">+{{ user.userBadges|length - 2 }}</a>
+                                    {% endif %}
+                                </div>
+                            {% else %}
+                                <span style="color:var(--color-text-muted);font-size:.75rem;">—</span>
+                            {% endif %}
                         </td>
                         <td class="score-cell">
                             <span class="score-value">{{ user.score|number_format(0, ',', ' ') }}</span>

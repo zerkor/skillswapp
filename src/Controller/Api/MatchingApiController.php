@@ -23,11 +23,9 @@ class MatchingApiController extends AbstractController
         $skill = (string) $request->query->get('skill', '');
         $level = (int) $request->query->get('level', 0);
 
-        if ($skill === '') {
-            return new JsonResponse(['success' => false, 'error' => 'Le paramètre skill est requis.', 'code' => 400], 400);
-        }
-
-        $matches = $this->matchingService->findMatches($user, $skill, $level);
+        $matches = $skill === ''
+            ? $this->matchingService->findAllTutors($user)
+            : $this->matchingService->findMatches($user, $skill, $level);
 
         $data = array_map(function (array $match) {
             return [
