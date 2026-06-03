@@ -11,9 +11,11 @@
 <div class="container" style="padding: var(--spacing-8) var(--container-padding);">
 
     <div class="page-header" style="text-align:center; margin-bottom:var(--spacing-12);">
-        <h1>Classement général</h1>
+        <h1>Classement — Top 10</h1>
         <p style="color:var(--color-text-muted);">Les meilleurs contributeurs de la communauté SkillSwap</p>
     </div>
+    {# POST-MVP : classements complexes, concours, statistiques avancées masqués #}
+    <div class="post-mvp-feature" aria-hidden="true"><!-- Défis saisonniers, concours, stats avancées — POST-MVP --></div>
 
     {# ════ PODIUM TOP 3 ════ #}
     {% if users|length >= 3 %}
@@ -27,7 +29,7 @@
                 {% endif %}
                 <span class="podium-medal podium-medal--silver" aria-hidden="true">🥈</span>
             </div>
-            <a href="{{ path('app_profile_show', {id: users[1].id}) }}" class="podium-name">{{ users[1].fullName }}</a>
+            <a href="{{ path('app_profile_show', {id: users[1].id}) }}" class="podium-name">@{{ users[1].displayName }}</a>
             <span class="podium-score">{{ users[1].score }} pts</span>
             <span class="badge-niveau {{ users[1].niveau }}">{{ users[1].niveau|capitalize }}</span>
             <div class="podium-bar podium-bar--2" aria-hidden="true"></div>
@@ -43,7 +45,7 @@
                 {% endif %}
                 <span class="podium-medal podium-medal--gold" aria-hidden="true">🥇</span>
             </div>
-            <a href="{{ path('app_profile_show', {id: users[0].id}) }}" class="podium-name">{{ users[0].fullName }}</a>
+            <a href="{{ path('app_profile_show', {id: users[0].id}) }}" class="podium-name">@{{ users[0].displayName }}</a>
             <span class="podium-score">{{ users[0].score }} pts</span>
             <span class="badge-niveau {{ users[0].niveau }}">{{ users[0].niveau|capitalize }}</span>
             <div class="podium-bar podium-bar--1" aria-hidden="true"></div>
@@ -58,7 +60,7 @@
                 {% endif %}
                 <span class="podium-medal podium-medal--bronze" aria-hidden="true">🥉</span>
             </div>
-            <a href="{{ path('app_profile_show', {id: users[2].id}) }}" class="podium-name">{{ users[2].fullName }}</a>
+            <a href="{{ path('app_profile_show', {id: users[2].id}) }}" class="podium-name">@{{ users[2].displayName }}</a>
             <span class="podium-score">{{ users[2].score }} pts</span>
             <span class="badge-niveau {{ users[2].niveau }}">{{ users[2].niveau|capitalize }}</span>
             <div class="podium-bar podium-bar--3" aria-hidden="true"></div>
@@ -95,12 +97,12 @@
                         <td class="user-cell">
                             <a href="{{ path('app_profile_show', {id: user.id}) }}" class="user-cell-link">
                                 {% if user.photo %}
-                                    <img src="{{ user.photo }}" alt="{{ user.fullName }}" class="avatar avatar-sm">
+                                    <img src="{{ user.photo }}" alt="@{{ user.displayName }}" class="avatar avatar-sm">
                                 {% else %}
                                     <div class="avatar avatar-sm avatar-placeholder">{{ user.prenom|slice(0,1) }}{{ user.nom|slice(0,1) }}</div>
                                 {% endif %}
                                 <div>
-                                    <span class="user-name">{{ user.fullName }}</span>
+                                    <span class="user-name">@{{ user.displayName }}</span>
                                     {% if user.formation %}
                                         <span class="user-formation">{{ user.formation }}</span>
                                     {% endif %}

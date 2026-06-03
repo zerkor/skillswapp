@@ -102,7 +102,7 @@
     </aside>
 </div>
 
-{# Template de post (cloné par JS) #}
+{# Template de post amélioré v1.1 — pseudo + réactions 4 types #}
 <template id="postTemplate">
     <article class="post-card card">
         <div class="post-header">
@@ -110,6 +110,7 @@
                 <img class="avatar avatar-sm post-avatar" src="" alt="" loading="lazy">
                 <div class="avatar avatar-sm avatar-placeholder post-avatar-placeholder" aria-hidden="true"></div>
                 <div class="post-author-info">
+                    {# Pseudo (displayName) affiché — pas le vrai nom #}
                     <a href="#" class="post-author-name"></a>
                     <time class="post-date" datetime=""></time>
                 </div>
@@ -122,11 +123,22 @@
             <p class="post-content"></p>
             <span class="tag-skill post-tag" style="display:none"></span>
         </div>
+        {# Réactions 4 types v1.1 #}
         <div class="post-footer">
-            <button class="post-action-btn post-like-btn" aria-label="J'aime">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
-                <span class="like-count">0</span>
-            </button>
+            <div class="reactions-bar">
+                <button class="reaction-btn" data-reaction="like" aria-label="J'aime">
+                    👍 <span class="reaction-count" data-type="like">0</span>
+                </button>
+                <button class="reaction-btn" data-reaction="heart" aria-label="J'adore">
+                    ❤️ <span class="reaction-count" data-type="heart">0</span>
+                </button>
+                <button class="reaction-btn" data-reaction="idea" aria-label="Bonne idée">
+                    💡 <span class="reaction-count" data-type="idea">0</span>
+                </button>
+                <button class="reaction-btn" data-reaction="celebrate" aria-label="Bravo">
+                    🎉 <span class="reaction-count" data-type="celebrate">0</span>
+                </button>
+            </div>
             <button class="post-action-btn post-comment-toggle" aria-label="Commentaires" aria-expanded="false">
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
                 <span class="comment-count">0</span>

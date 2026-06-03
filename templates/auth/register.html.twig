@@ -48,6 +48,14 @@
         {# ── Étape 1 : Compte ── #}
         <div class="register-step-panel" id="step1Panel">
             <div class="input-group">
+                <label class="input-label" for="regPseudo">
+                    Pseudonyme public
+                    <span class="input-hint" style="font-weight:normal;">Affiché publiquement à la place de votre vrai nom</span>
+                </label>
+                <input type="text" id="regPseudo" class="input-field" placeholder="ex: AliceM, CodingWizard42..." minlength="3" maxlength="50" required pattern="[a-zA-Z0-9_\-\.]+">
+                <p class="input-hint">Lettres, chiffres, _, - et . uniquement. Votre vrai nom restera privé.</p>
+            </div>
+            <div class="input-group">
                 <label class="input-label" for="regEmail">Adresse email</label>
                 <input type="email" id="regEmail" class="input-field" placeholder="votre@email.fr" autocomplete="email" required>
             </div>
@@ -189,9 +197,18 @@
     }
 
     document.getElementById('step1Next')?.addEventListener('click', () => {
-        const email = document.getElementById('regEmail').value;
-        const pass  = document.getElementById('regPassword').value;
-        const conf  = document.getElementById('regPasswordConfirm').value;
+        const pseudo = document.getElementById('regPseudo').value.trim();
+        const email  = document.getElementById('regEmail').value;
+        const pass   = document.getElementById('regPassword').value;
+        const conf   = document.getElementById('regPasswordConfirm').value;
+        if (!pseudo || pseudo.length < 3) {
+            showError('Le pseudonyme doit contenir au moins 3 caractères.');
+            return;
+        }
+        if (!/^[a-zA-Z0-9_\-\.]+$/.test(pseudo)) {
+            showError('Le pseudo ne peut contenir que des lettres, chiffres, _, - et .');
+            return;
+        }
         if (!email || !pass || pass !== conf) {
             showError('Vérifiez vos informations (email valide, mots de passe identiques).');
             return;
@@ -248,6 +265,7 @@
     window.removeSkill = (i) => { skills.splice(i, 1); renderSkills(); };
 
     document.getElementById('submitRegister')?.addEventListener('click', async () => {
+        const pseudo = document.getElementById('regPseudo').value.trim();
         const email  = document.getElementById('regEmail').value;
         const pass   = document.getElementById('regPassword').value;
         const nom    = document.getElementById('regNom').value;
@@ -261,7 +279,7 @@
             const res = await fetch('/api/auth/register', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ email, password: pass, nom, prenom }),
+                body: JSON.stringify({ email, password: pass, nom, prenom, pseudo }),
             });
             const json = await res.json();
 

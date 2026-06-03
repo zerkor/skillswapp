@@ -102,7 +102,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (user.photo) {
       const img = card.querySelector('.result-avatar');
       img.src = user.photo;
-      img.alt = user.fullName || `${user.prenom} ${user.nom}`;
+      img.alt = '@' + (user.pseudo || user.displayName || user.prenom);
     } else {
       const img = card.querySelector('.result-avatar');
       img.style.display = 'none';
@@ -122,9 +122,16 @@ document.addEventListener('DOMContentLoaded', () => {
     const scoreClass = score >= 70 ? 'high' : score >= 40 ? 'medium' : 'low';
     ring.classList.add(`score-ring--${scoreClass}`);
 
-    // Info
-    card.querySelector('.result-name').textContent        = user.fullName || `${user.prenom} ${user.nom}`;
-    card.querySelector('.result-formation').textContent   = user.formation || '';
+    // Tooltip score breakdown (si disponible)
+    if (match.scoreBreakdown) {
+      const b = match.scoreBreakdown;
+      ring.title = `Compétence: ${b.skill}% | Créneaux: ${b.slots}% | Réputation: ${b.reputation}%`;
+    }
+
+    // Afficher le PSEUDO (@displayName) — pas le vrai nom
+    const displayName = user.pseudo || user.displayName || user.prenom || 'Utilisateur';
+    card.querySelector('.result-name').textContent      = '@' + displayName;
+    card.querySelector('.result-formation').textContent = user.formation || '';
     card.querySelector('.result-skill-tag').textContent   = skill.nom;
 
     const niveauEl = card.querySelector('.result-niveau');

@@ -17,14 +17,15 @@ use Symfony\Component\Validator\Constraints as Assert;
 #[ORM\Entity(repositoryClass: UserRepository::class)]
 #[ORM\Table(name: '`user`')]
 #[ORM\HasLifecycleCallbacks]
-#[UniqueEntity(fields: ['email'], message: 'Cet email est déjà utilisé.')]
+#[UniqueEntity(fields: ['email'],  message: 'Cet email est déjà utilisé.')]
+#[UniqueEntity(fields: ['pseudo'], message: 'Ce pseudo est déjà pris.')]
 class User implements UserInterface, PasswordAuthenticatedUserInterface
 {
-    public const NIVEAU_NOVICE     = 'novice';
-    public const NIVEAU_APPRENTI   = 'apprenti';
-    public const NIVEAU_MENTOR     = 'mentor';
-    public const NIVEAU_EXPERT     = 'expert';
-    public const NIVEAU_LEGENDE    = 'legende';
+    public const NIVEAU_NOVICE   = 'novice';
+    public const NIVEAU_APPRENTI = 'apprenti';
+    public const NIVEAU_MENTOR   = 'mentor';
+    public const NIVEAU_EXPERT   = 'expert';
+    public const NIVEAU_LEGENDE  = 'legende';
 
     public const NIVEAUX = [
         self::NIVEAU_NOVICE,
@@ -50,15 +51,26 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\Column]
     private ?string $password = null;
 
+    /** Nom réel — visible uniquement dans les sessions confirmées */
     #[ORM\Column(length: 100)]
     #[Assert\NotBlank]
     #[Assert\Length(max: 100)]
     private ?string $nom = null;
 
+    /** Prénom réel — visible uniquement dans les sessions confirmées */
     #[ORM\Column(length: 100)]
     #[Assert\NotBlank]
     #[Assert\Length(max: 100)]
     private ?string $prenom = null;
+
+    /**
+     * Pseudonyme public — affiché sur le feed, la recherche et les cartes.
+     * Validé par le formateur pour préserver l'anonymat des étudiants.
+     */
+    #[ORM\Column(length: 50, unique: true, nullable: true)]
+    #[Assert\Length(min: 3, max: 50)]
+    #[Assert\Regex(pattern: '/^[a-zA-Z0-9_\-\.]+$/', message: 'Le pseudo ne peut contenir que des lettres, chiffres, _, - et .')]
+    private ?string $pseudo = null;
 
     #[ORM\Column(length: 255, nullable: true)]
     private ?string $photo = null;
@@ -66,9 +78,11 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\Column(type: Types::TEXT, nullable: true)]
     private ?string $bio = null;
 
+    /** @deprecated Conservé pour rétrocompatibilité — utiliser Education::diplome */
     #[ORM\Column(length: 150, nullable: true)]
     private ?string $formation = null;
 
+    /** @deprecated Conservé pour rétrocompatibilité — utiliser Education::annee */
     #[ORM\Column(length: 20, nullable: true)]
     private ?string $promotion = null;
 
@@ -108,6 +122,9 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\OneToMany(targetEntity: UserBadge::class, mappedBy: 'user', cascade: ['persist', 'remove'], orphanRemoval: true)]
     private Collection $userBadges;
 
+    #[ORM\OneToMany(targetEntity: Education::class, mappedBy: 'user', cascade: ['persist', 'remove'], orphanRemoval: true)]
+    private Collection $educations;
+
     public function __construct()
     {
         $this->skills            = new ArrayCollection();
@@ -117,6 +134,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         $this->reviews           = new ArrayCollection();
         $this->posts             = new ArrayCollection();
         $this->userBadges        = new ArrayCollection();
+        $this->educations        = new ArrayCollection();
     }
 
     #[ORM\PrePersist]
@@ -125,51 +143,25 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         $this->createdAt = new \DateTimeImmutable();
     }
 
-    public function getId(): ?int
-    {
-        return $this->id;
-    }
+    // ── Getters / Setters ──────────────────────────────────────────────────
 
-    public function getEmail(): ?string
-    {
-        return $this->email;
-    }
+    public function getId(): ?int { return $this->id; }
 
-    public function setEmail(string $email): static
-    {
-        $this->email = $email;
-        return $this;
-    }
+    public function getEmail(): ?string { return $this->email; }
+    public function setEmail(string $email): static { $this->email = $email; return $this; }
 
-    public function getUserIdentifier(): string
-    {
-        return (string) $this->email;
-    }
+    public function getUserIdentifier(): string { return (string) $this->email; }
 
     public function getRoles(): array
     {
-        $roles = $this->roles;
+        $roles   = $this->roles;
         $roles[] = 'ROLE_USER';
         return array_unique($roles);
     }
+    public function setRoles(array $roles): static { $this->roles = $roles; return $this; }
 
-    public function setRoles(array $roles): static
-    {
-        $this->roles = $roles;
-        return $this;
-    }
-
-    public function getPassword(): ?string
-    {
-        return $this->password;
-    }
-
-    public function setPassword(string $password): static
-    {
-        $this->password = $password;
-        return $this;
-    }
-
+    public function getPassword(): ?string { return $this->password; }
+    public function setPassword(string $password): static { $this->password = $password; return $this; }
     public function eraseCredentials(): void {}
 
     public function getNom(): ?string { return $this->nom; }
@@ -178,10 +170,19 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     public function getPrenom(): ?string { return $this->prenom; }
     public function setPrenom(string $prenom): static { $this->prenom = $prenom; return $this; }
 
-    public function getFullName(): string
+    public function getFullName(): string { return trim($this->prenom . ' ' . $this->nom); }
+
+    /**
+     * Retourne le pseudo si défini, sinon le prénom (fallback rétrocompatible).
+     * C'est CE champ qui doit être affiché publiquement (feed, recherche, cartes).
+     */
+    public function getDisplayName(): string
     {
-        return trim($this->prenom . ' ' . $this->nom);
+        return $this->pseudo ?? $this->prenom ?? 'Utilisateur';
     }
+
+    public function getPseudo(): ?string { return $this->pseudo; }
+    public function setPseudo(?string $pseudo): static { $this->pseudo = $pseudo; return $this; }
 
     public function getPhoto(): ?string { return $this->photo; }
     public function setPhoto(?string $photo): static { $this->photo = $photo; return $this; }
@@ -220,11 +221,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         }
         return $this;
     }
-    public function removeSkill(Skill $skill): static
-    {
-        $this->skills->removeElement($skill);
-        return $this;
-    }
+    public function removeSkill(Skill $skill): static { $this->skills->removeElement($skill); return $this; }
 
     /** @return Collection<int, Availability> */
     public function getAvailabilities(): Collection { return $this->availabilities; }
@@ -252,22 +249,40 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     /** @return Collection<int, UserBadge> */
     public function getUserBadges(): Collection { return $this->userBadges; }
 
+    /** @return Collection<int, Education> */
+    public function getEducations(): Collection { return $this->educations; }
+    public function addEducation(Education $education): static
+    {
+        if (!$this->educations->contains($education)) {
+            $this->educations->add($education);
+            $education->setUser($this);
+        }
+        return $this;
+    }
+    public function removeEducation(Education $education): static
+    {
+        $this->educations->removeElement($education);
+        return $this;
+    }
+
     public function toArray(): array
     {
         return [
-            'id'         => $this->id,
-            'email'      => $this->email,
-            'nom'        => $this->nom,
-            'prenom'     => $this->prenom,
-            'fullName'   => $this->getFullName(),
-            'photo'      => $this->photo,
-            'bio'        => $this->bio,
-            'formation'  => $this->formation,
-            'promotion'  => $this->promotion,
-            'score'      => $this->score,
-            'niveau'     => $this->niveau,
-            'isVerified' => $this->isVerified,
-            'createdAt'  => $this->createdAt?->format('c'),
+            'id'          => $this->id,
+            'email'       => $this->email,
+            'nom'         => $this->nom,
+            'prenom'      => $this->prenom,
+            'pseudo'      => $this->pseudo,
+            'displayName' => $this->getDisplayName(),
+            'fullName'    => $this->getFullName(),
+            'photo'       => $this->photo,
+            'bio'         => $this->bio,
+            'formation'   => $this->formation,
+            'promotion'   => $this->promotion,
+            'score'       => $this->score,
+            'niveau'      => $this->niveau,
+            'isVerified'  => $this->isVerified,
+            'createdAt'   => $this->createdAt?->format('c'),
         ];
     }
 }

@@ -1,6 +1,7 @@
 /**
- * SkillSwap — Feed module
- * Chargement du feed, publication, likes, commentaires.
+ * SkillSwap — Feed module v1.1
+ * Chargement du feed, publication, réactions 4 types, commentaires.
+ * Affichage pseudo (@displayName) — pas le vrai nom.
  */
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -53,7 +54,6 @@ document.addEventListener('DOMContentLoaded', () => {
       if (postTag) postTag.value = '';
       if (postCharCount) postCharCount.textContent = '0/2000';
 
-      // Prepend the new post
       const el = buildPostCard(json.data);
       const loader = feedContainer.querySelector('.feed-loader');
       if (loader) {
@@ -126,7 +126,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const placeholder = card.querySelector('.post-avatar-placeholder');
     if (post.user?.photo) {
       avatar.src = post.user.photo;
-      avatar.alt = post.user.fullName || '';
+      avatar.alt = '@' + (post.user.displayName || post.user.pseudo || post.user.prenom);
     } else {
       avatar.style.display = 'none';
       placeholder.style.display = 'flex';
@@ -134,12 +134,13 @@ document.addEventListener('DOMContentLoaded', () => {
       placeholder.textContent = initials;
     }
 
-    // Author link
+    // Auteur — afficher le PSEUDO (@displayName), jamais le vrai nom sur le feed
     const authorName = card.querySelector('.post-author-name');
-    authorName.textContent = post.user?.fullName || '';
+    const displayName = post.user?.pseudo || post.user?.displayName || post.user?.prenom || 'Utilisateur';
+    authorName.textContent = '@' + displayName;
     authorName.href        = `/profile/${post.user?.id}`;
 
-    // Date
+    // Date relative
     const dateEl = card.querySelector('.post-date');
     dateEl.textContent = formatDate(post.createdAt);
     dateEl.setAttribute('datetime', post.createdAt || '');
@@ -147,25 +148,36 @@ document.addEventListener('DOMContentLoaded', () => {
     // Content
     card.querySelector('.post-content').textContent = post.contenu;
 
-    // Tag
+    // Tag compétence
     const tagEl = card.querySelector('.post-tag');
     if (post.competenceTag) {
       tagEl.textContent = '#' + post.competenceTag;
       tagEl.style.display = 'inline-flex';
     }
 
-    // Like button
-    const likeBtn   = card.querySelector('.post-like-btn');
-    const likeCount = card.querySelector('.like-count');
-    likeCount.textContent = post.likesCount || 0;
-    if (post.isLiked) likeBtn.classList.add('is-liked');
+    // ── Réactions 4 types v1.1 ──
+    const reactions = post.reactionCounts || { like: 0, heart: 0, idea: 0, celebrate: 0 };
+    card.querySelectorAll('.reaction-btn').forEach(btn => {
+      const type = btn.dataset.reaction;
+      const countEl = btn.querySelector('.reaction-count');
+      if (countEl) countEl.textContent = reactions[type] || 0;
 
-    likeBtn.addEventListener('click', async () => {
-      const json = await apiCall(`/api/posts/${post.id}/like`, { method: 'POST' });
-      if (json.success) {
-        likeCount.textContent = json.data.likesCount;
-        likeBtn.classList.toggle('is-liked', json.data.liked);
-      }
+      btn.addEventListener('click', async () => {
+        const json = await apiCall(`/api/posts/${post.id}/react`, {
+          method: 'POST',
+          body: JSON.stringify({ type }),
+        });
+        if (json.success) {
+          const newCounts = json.data.reactionCounts;
+          card.querySelectorAll('.reaction-btn').forEach(b => {
+            const t = b.dataset.reaction;
+            const c = b.querySelector('.reaction-count');
+            if (c) c.textContent = newCounts[t] || 0;
+          });
+          btn.classList.add('is-active');
+          setTimeout(() => btn.classList.remove('is-active'), 600);
+        }
+      });
     });
 
     // Comments toggle
@@ -197,12 +209,13 @@ document.addEventListener('DOMContentLoaded', () => {
       if (json.success) {
         commentInput.value = '';
         const c = json.data;
+        const pseudoAuteur = c.user?.pseudo || c.user?.displayName || c.user?.prenom || '?';
         const el = document.createElement('div');
         el.className = 'comment-item';
         el.innerHTML = `
-          <div class="avatar avatar-sm avatar-placeholder">${((c.user?.prenom || '')[0] || '') + ((c.user?.nom || '')[0] || '')}</div>
+          <div class="avatar avatar-sm avatar-placeholder">${((c.user?.prenom || '')[0] || '')}${((c.user?.nom || '')[0] || '')}</div>
           <div class="comment-body">
-            <div class="comment-author">${c.user?.fullName || ''}</div>
+            <div class="comment-author">@${escapeHtml(pseudoAuteur)}</div>
             <div class="comment-text">${escapeHtml(c.contenu)}</div>
           </div>`;
         commentsList.appendChild(el);
@@ -213,10 +226,8 @@ document.addEventListener('DOMContentLoaded', () => {
       }
     });
 
-    // Delete button (only visible for own posts — server enforces this)
+    // Delete button
     const deleteBtn = card.querySelector('.post-delete-btn');
-    // Show delete button if current user owns the post
-    // We check via data from JWT payload if available
     const currentUserId = getCurrentUserId();
     if (currentUserId && post.user?.id === currentUserId) {
       deleteBtn.style.display = 'flex';

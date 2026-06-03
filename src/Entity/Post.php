@@ -29,6 +29,13 @@ class Post
     #[Assert\Length(max: 2000)]
     private ?string $contenu = null;
 
+    /**
+     * Compteurs de réactions multi-types — v1.1
+     * Format JSON : {"like":0,"heart":0,"idea":0,"celebrate":0}
+     */
+    #[ORM\Column(type: Types::JSON, nullable: true)]
+    private ?array $reactionCounts = null;
+
     #[ORM\Column(length: 255, nullable: true)]
     private ?string $imageUrl = null;
 
@@ -74,6 +81,25 @@ class Post
 
     public function getCreatedAt(): ?\DateTimeImmutable { return $this->createdAt; }
 
+    public function getReactionCounts(): array
+    {
+        return $this->reactionCounts ?? ['like' => 0, 'heart' => 0, 'idea' => 0, 'celebrate' => 0];
+    }
+
+    public function addReaction(string $type): void
+    {
+        $counts = $this->getReactionCounts();
+        $counts[$type] = ($counts[$type] ?? 0) + 1;
+        $this->reactionCounts = $counts;
+    }
+
+    public function removeReaction(string $type): void
+    {
+        $counts = $this->getReactionCounts();
+        $counts[$type] = max(0, ($counts[$type] ?? 0) - 1);
+        $this->reactionCounts = $counts;
+    }
+
     /** @return Collection<int, User> */
     public function getLikes(): Collection { return $this->likes; }
 
@@ -102,15 +128,16 @@ class Post
     public function toArray(?User $currentUser = null): array
     {
         return [
-            'id'            => $this->id,
-            'user'          => $this->user?->toArray(),
-            'contenu'       => $this->contenu,
-            'imageUrl'      => $this->imageUrl,
-            'competenceTag' => $this->competenceTag,
-            'createdAt'     => $this->createdAt?->format('c'),
-            'likesCount'    => $this->likes->count(),
-            'commentsCount' => $this->comments->count(),
-            'isLiked'       => $currentUser ? $this->isLikedBy($currentUser) : false,
+            'id'             => $this->id,
+            'user'           => $this->user?->toArray(),
+            'contenu'        => $this->contenu,
+            'imageUrl'       => $this->imageUrl,
+            'competenceTag'  => $this->competenceTag,
+            'createdAt'      => $this->createdAt?->format('c'),
+            'likesCount'     => $this->likes->count(),
+            'commentsCount'  => $this->comments->count(),
+            'isLiked'        => $currentUser ? $this->isLikedBy($currentUser) : false,
+            'reactionCounts' => $this->getReactionCounts(),
         ];
     }
 }

@@ -90,6 +90,33 @@ class FeedApiController extends AbstractController
         return $this->success(['liked' => $liked, 'likesCount' => $post->getLikes()->count()]);
     }
 
+    /**
+     * Réaction multi-types — v1.1 (like, heart, idea, celebrate)
+     */
+    #[Route('/posts/{id}/react', name: 'post_react', methods: ['POST'])]
+    public function reactPost(int $id, Request $request, #[CurrentUser] User $user): JsonResponse
+    {
+        $post = $this->postRepository->find($id);
+        if (!$post) {
+            return $this->error('Post introuvable.', 404);
+        }
+
+        $data = json_decode($request->getContent(), true);
+        $type = (string) ($data['type'] ?? 'like');
+
+        $allowed = ['like', 'heart', 'idea', 'celebrate'];
+        if (!in_array($type, $allowed, true)) {
+            return $this->error('Type de réaction invalide.', 400);
+        }
+
+        $post->addReaction($type);
+        $this->em->flush();
+
+        return $this->success([
+            'reactionCounts' => $post->getReactionCounts(),
+        ]);
+    }
+
     #[Route('/posts/{id}/comments', name: 'post_comment', methods: ['POST'])]
     public function addComment(int $id, Request $request, #[CurrentUser] User $user): JsonResponse
     {

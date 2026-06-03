@@ -15,6 +15,7 @@
     <link rel="stylesheet" href="/css/reset.css">
     <link rel="stylesheet" href="/css/components.css">
     <link rel="stylesheet" href="/css/layout.css">
+    <link rel="stylesheet" href="/css/badges.css">
     {% block stylesheets %}{% endblock %}
 </head>
 <body class="{% block body_class %}{% endblock %}">
@@ -52,6 +53,11 @@
                     <a href="{{ path('app_leaderboard') }}" class="nav-link {% if app.request.attributes.get('_route') == 'app_leaderboard' %}active{% endif %}" role="menuitem">
                         Classement
                     </a>
+                    {% if is_granted('ROLE_ADMIN') %}
+                    <a href="{{ path('app_admin_dashboard') }}" class="nav-link {% if app.request.attributes.get('_route') starts with 'app_admin' %}active{% endif %}" role="menuitem" style="color:var(--color-warning);">
+                        Admin
+                    </a>
+                    {% endif %}
                 {% endif %}
             </div>
 
@@ -66,7 +72,7 @@
                                     {{ app.user.prenom|slice(0,1) }}{{ app.user.nom|slice(0,1) }}
                                 </div>
                             {% endif %}
-                            <span class="nav-user-name">{{ app.user.prenom }}</span>
+                            <span class="nav-user-name">@{{ app.user.displayName }}</span>
                             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true">
                                 <path d="M6 9L12 15L18 9" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
                             </svg>

@@ -20,13 +20,21 @@ class Badge
     #[ORM\Column(length: 100, unique: true)]
     private ?string $nom = null;
 
+    /** Description courte affichée dans l'interface */
     #[ORM\Column(length: 255)]
     private ?string $description = null;
+
+    /**
+     * Condition d'obtention explicite — affichée dans le tooltip.
+     * Ex : "Compléter 5 sessions en tant que tuteur"
+     */
+    #[ORM\Column(length: 255, nullable: true)]
+    private ?string $conditionLabel = null;
 
     #[ORM\Column(length: 50)]
     private string $icone = '🏆';
 
-    #[ORM\Column(length: 50)]
+    #[ORM\Column(length: 50, nullable: true)]
     private ?string $conditionType = null;
 
     #[ORM\Column(type: 'integer', options: ['default' => 1])]
@@ -39,6 +47,9 @@ class Badge
 
     public function getDescription(): ?string { return $this->description; }
     public function setDescription(string $description): static { $this->description = $description; return $this; }
+
+    public function getConditionLabel(): ?string { return $this->conditionLabel; }
+    public function setConditionLabel(?string $conditionLabel): static { $this->conditionLabel = $conditionLabel; return $this; }
 
     public function getIcone(): string { return $this->icone; }
     public function setIcone(string $icone): static { $this->icone = $icone; return $this; }
@@ -55,6 +66,7 @@ class Badge
             'id'             => $this->id,
             'nom'            => $this->nom,
             'description'    => $this->description,
+            'conditionLabel' => $this->conditionLabel,
             'icone'          => $this->icone,
             'conditionType'  => $this->conditionType,
             'conditionValue' => $this->conditionValue,

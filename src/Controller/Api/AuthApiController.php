@@ -42,6 +42,7 @@ class AuthApiController extends AbstractController
         $password = (string) ($data['password'] ?? '');
         $nom      = trim((string) ($data['nom'] ?? ''));
         $prenom   = trim((string) ($data['prenom'] ?? ''));
+        $pseudo   = trim((string) ($data['pseudo'] ?? ''));
 
         if ($this->allowedEmailDomain !== '' && !str_ends_with($email, '@' . $this->allowedEmailDomain)) {
             return $this->error(
@@ -54,10 +55,16 @@ class AuthApiController extends AbstractController
             return $this->error('Cet email est déjà utilisé.', 409);
         }
 
+        // Vérifier unicité du pseudo
+        if ($pseudo !== '' && $this->userRepository->findOneBy(['pseudo' => $pseudo])) {
+            return $this->error('Ce pseudo est déjà pris.', 409);
+        }
+
         $user = new User();
         $user->setEmail($email)
              ->setNom($nom)
              ->setPrenom($prenom)
+             ->setPseudo($pseudo !== '' ? $pseudo : null)
              ->setPassword($this->passwordHasher->hashPassword($user, $password))
              ->setVerificationToken(bin2hex(random_bytes(32)));
 

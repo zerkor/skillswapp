@@ -1,6 +1,6 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}{{ profile.fullName }} — SkillSwap{% endblock %}
+{% block title %}@{{ profile.displayName }} — SkillSwap{% endblock %}
 {% block body_class %}page-profile{% endblock %}
 
 {% block stylesheets %}
@@ -16,9 +16,9 @@
         <div class="profile-header-content">
             <div class="profile-avatar-wrap">
                 {% if profile.photo %}
-                    <img src="{{ profile.photo }}" alt="{{ profile.fullName }}" class="avatar avatar-xl">
+                    <img src="{{ profile.photo }}" alt="@{{ profile.displayName }}" class="avatar avatar-xl">
                 {% else %}
-                    <div class="avatar avatar-xl avatar-placeholder avatar-placeholder--lg">
+                    <div class="avatar avatar-xl avatar-placeholder">
                         {{ profile.prenom|slice(0,1) }}{{ profile.nom|slice(0,1) }}
                     </div>
                 {% endif %}
@@ -31,16 +31,31 @@
             </div>
 
             <div class="profile-info">
-                <h1 class="profile-name">{{ profile.fullName }}</h1>
-                {% if profile.formation %}
+                {# Pseudo (nom public) — v1.1 #}
+                <h1 class="profile-name">@{{ profile.displayName }}</h1>
+                {# Vrai nom uniquement visible pour les sessions confirmées
+                   ou sur son propre profil #}
+                {% if isSelf %}
+                    <p class="profile-realname">{{ profile.fullName }}</p>
+                {% endif %}
+
+                {# Formation : afficher les éducations v1.1 ou le champ legacy #}
+                {% if profile.educations|length > 0 %}
+                    <p class="profile-formation">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M22 10v6M2 10l10-5 10 5-10 5z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                        {{ profile.educations|first.diplome }}{% if profile.educations|first.etablissement %} — {{ profile.educations|first.etablissement }}{% endif %}
+                    </p>
+                {% elseif profile.formation %}
                     <p class="profile-formation">
                         <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M22 10v6M2 10l10-5 10 5-10 5z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
                         {{ profile.formation }}{% if profile.promotion %} — Promo {{ profile.promotion }}{% endif %}
                     </p>
                 {% endif %}
+
                 {% if profile.bio %}
                     <p class="profile-bio">{{ profile.bio }}</p>
                 {% endif %}
+
                 <div class="profile-meta">
                     <div class="profile-score-display">
                         <span class="score-value">{{ profile.score }}</span>
@@ -61,8 +76,9 @@
                         Modifier
                     </a>
                 {% else %}
-                    <a href="{{ path('app_sessions_new') }}?tuteur={{ profile.id }}" class="btn btn-primary">
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><rect x="3" y="4" width="18" height="18" rx="2" stroke="currentColor" stroke-width="2"/><path d="M12 8v4l3 3" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+                    {# CTA principal : Proposer session — le plus visible #}
+                    <a href="{{ path('app_sessions_new') }}?tuteur={{ profile.id }}" class="btn btn-primary btn-lg">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><rect x="3" y="4" width="18" height="18" rx="2" stroke="currentColor" stroke-width="2"/><path d="M12 8v4l3 3" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
                         Proposer une session
                     </a>
                 {% endif %}
@@ -88,7 +104,7 @@
     <div class="profile-body">
         <div class="profile-main">
 
-            {# ══ COMPÉTENCES ══ #}
+            {# ══ COMPÉTENCES (savoir-faire concrets — v1.1) ══ #}
             <section class="card profile-section" aria-labelledby="skills-title">
                 <h2 id="skills-title" class="section-title-sm">
                     <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
@@ -151,6 +167,38 @@
                 {% endif %}
             </section>
 
+            {# ══ FORMATION / PARCOURS ACADÉMIQUE (v1.1) ══ #}
+            <section class="card profile-section" aria-labelledby="edu-title">
+                <h2 id="edu-title" class="section-title-sm">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M22 10v6M2 10l10-5 10 5-10 5z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                    Parcours académique
+                </h2>
+                {% if profile.educations|length > 0 %}
+                    <div style="display:flex;flex-direction:column;gap:var(--spacing-3);">
+                        {% for edu in profile.educations %}
+                            <div style="background:var(--color-bg-alt);border-radius:var(--radius-md);padding:var(--spacing-3) var(--spacing-4);border-left:3px solid var(--color-primary);">
+                                <div style="font-weight:var(--font-semibold);font-size:var(--text-sm);">{{ edu.diplome }}</div>
+                                {% if edu.etablissement %}
+                                    <div style="font-size:var(--text-xs);color:var(--color-text-muted);margin-top:2px;">{{ edu.etablissement }}</div>
+                                {% endif %}
+                                <div style="display:flex;gap:var(--spacing-3);margin-top:var(--spacing-2);">
+                                    {% if edu.niveau %}
+                                        <span style="font-size:var(--text-xs);background:var(--color-primary-light);color:var(--color-primary-dark);padding:2px 8px;border-radius:var(--radius-full);font-weight:600;">{{ edu.niveauLabel }}</span>
+                                    {% endif %}
+                                    {% if edu.annee %}
+                                        <span style="font-size:var(--text-xs);color:var(--color-text-muted);">Promo {{ edu.annee }}</span>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        {% endfor %}
+                    </div>
+                {% elseif profile.formation %}
+                    <p style="font-size:var(--text-sm);color:var(--color-text-muted);">{{ profile.formation }}{% if profile.promotion %} ({{ profile.promotion }}){% endif %}</p>
+                {% else %}
+                    <p class="empty-state">Aucune formation renseignée.</p>
+                {% endif %}
+            </section>
+
             {# ══ DISPONIBILITÉS ══ #}
             <section class="card profile-section" aria-labelledby="avail-title">
                 <h2 id="avail-title" class="section-title-sm">
@@ -178,18 +226,34 @@
 
         <div class="profile-sidebar">
 
-            {# ══ BADGES ══ #}
+            {# ══ BADGES AVEC TOOLTIPS (v1.1) ══ #}
             <section class="card profile-section" aria-labelledby="badges-title">
-                <h2 id="badges-title" class="section-title-sm">
-                    🏆 Badges
-                </h2>
+                <h2 id="badges-title" class="section-title-sm">🏆 Badges</h2>
                 {% if profile.userBadges|length > 0 %}
                     <div class="badges-grid">
                         {% for userBadge in profile.userBadges %}
-                            <div class="badge-item" title="{{ userBadge.badge.description }}">
-                                <span class="badge-icone">{{ userBadge.badge.icone }}</span>
-                                <span class="badge-name">{{ userBadge.badge.nom }}</span>
-                                <span class="badge-date">{{ userBadge.obtainedAt|date('d/m/Y') }}</span>
+                            {% set badge = userBadge.badge %}
+                            <div class="badge-wrapper" data-badge-id="{{ badge.id }}"
+                                 data-badge-nom="{{ badge.nom|e('html_attr') }}"
+                                 data-badge-icone="{{ badge.icone }}"
+                                 data-badge-desc="{{ badge.description|e('html_attr') }}"
+                                 data-badge-condition="{{ badge.conditionLabel|default('')|e('html_attr') }}"
+                                 tabindex="0" role="button" aria-label="{{ badge.nom }} : {{ badge.description }}">
+
+                                <div class="badge-item">
+                                    <span class="badge-icone">{{ badge.icone }}</span>
+                                    <span class="badge-name">{{ badge.nom }}</span>
+                                    <span class="badge-date">{{ userBadge.obtainedAt|date('d/m/Y') }}</span>
+                                </div>
+
+                                {# Tooltip desktop #}
+                                <div class="badge-tooltip" role="tooltip">
+                                    <div class="badge-tooltip-title">{{ badge.icone }} {{ badge.nom }}</div>
+                                    <div class="badge-tooltip-desc">{{ badge.description }}</div>
+                                    {% if badge.conditionLabel %}
+                                        <div class="badge-tooltip-condition">{{ badge.conditionLabel }}</div>
+                                    {% endif %}
+                                </div>
                             </div>
                         {% endfor %}
                     </div>
@@ -204,13 +268,13 @@
                     <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><rect x="3" y="4" width="18" height="18" rx="2" stroke="currentColor" stroke-width="2"/><path d="M12 8v4l3 3" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
                     Sessions récentes
                 </h2>
-                {% set sessions = profile.sessionsAsTutor|merge(profile.sessionsAsLearner|slice(0,5)) %}
+                {% set sessions = profile.sessionsAsTutor|slice(0,3)|merge(profile.sessionsAsLearner|slice(0,2)) %}
                 {% if sessions|length > 0 %}
                     <ul class="sessions-list-mini">
                         {% for session in sessions|slice(0, 5) %}
                             <li class="session-mini">
                                 <span class="session-mini-comp">{{ session.competence }}</span>
-                                <span class="statut-badge statut-badge--{{ session.statut }}">{{ session.statut }}</span>
+                                <span class="statut-badge statut-badge--{{ session.statut }}">{{ session.statut|replace({'_': ' '})|capitalize }}</span>
                             </li>
                         {% endfor %}
                     </ul>
@@ -223,5 +287,49 @@
     </div>
 </div>
 
+{# Modal badge pour mobile #}
+<div class="badge-modal-overlay" id="badgeModalOverlay" role="dialog" aria-modal="true" aria-labelledby="badgeModalTitle">
+    <div class="badge-modal">
+        <div class="badge-modal-header">
+            <span class="badge-modal-icon" id="badgeModalIcon"></span>
+            <button class="badge-modal-close" id="badgeModalClose" aria-label="Fermer">✕</button>
+        </div>
+        <div class="badge-modal-name" id="badgeModalTitle"></div>
+        <div class="badge-modal-desc" id="badgeModalDesc"></div>
+        <div class="badge-modal-condition" id="badgeModalCondition"></div>
+    </div>
+</div>
+
 <script src="/js/profile.js"></script>
+<script>
+// Badge modal (mobile) + keyboard support
+const overlay = document.getElementById('badgeModalOverlay');
+const closeBtn = document.getElementById('badgeModalClose');
+
+document.querySelectorAll('.badge-wrapper').forEach(wrapper => {
+    // Mobile : clic → modal
+    wrapper.addEventListener('click', (e) => {
+        if (window.innerWidth < 768) {
+            e.preventDefault();
+            document.getElementById('badgeModalIcon').textContent       = wrapper.dataset.badgeIcone;
+            document.getElementById('badgeModalTitle').textContent      = wrapper.dataset.badgeNom;
+            document.getElementById('badgeModalDesc').textContent       = wrapper.dataset.badgeDesc;
+            document.getElementById('badgeModalCondition').textContent  = wrapper.dataset.badgeCondition || '';
+            overlay.classList.add('is-open');
+            closeBtn.focus();
+        }
+    });
+    // Keyboard
+    wrapper.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault();
+            wrapper.click();
+        }
+    });
+});
+
+closeBtn?.addEventListener('click', () => overlay.classList.remove('is-open'));
+overlay?.addEventListener('click', (e) => { if (e.target === overlay) overlay.classList.remove('is-open'); });
+document.addEventListener('keydown', (e) => { if (e.key === 'Escape') overlay?.classList.remove('is-open'); });
+</script>
 {% endblock %}

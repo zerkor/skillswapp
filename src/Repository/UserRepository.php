@@ -45,13 +45,36 @@ class UserRepository extends ServiceEntityRepository implements PasswordUpgrader
             ->getResult();
     }
 
-    /**
-     * Compte le nombre total d'inscrits.
-     */
+    /** Nombre total d'inscrits (KPI admin #1). */
     public function countTotal(): int
     {
         return (int) $this->createQueryBuilder('u')
             ->select('COUNT(u.id)')
+            ->getQuery()
+            ->getSingleScalarResult();
+    }
+
+    /** Nombre d'utilisateurs vérifiés. */
+    public function countVerified(): int
+    {
+        return (int) $this->createQueryBuilder('u')
+            ->select('COUNT(u.id)')
+            ->where('u.isVerified = true')
+            ->getQuery()
+            ->getSingleScalarResult();
+    }
+
+    /**
+     * Nouveaux inscrits ces N derniers jours.
+     */
+    public function countLastDays(int $days = 30): int
+    {
+        $since = new \DateTimeImmutable("-{$days} days");
+
+        return (int) $this->createQueryBuilder('u')
+            ->select('COUNT(u.id)')
+            ->where('u.createdAt >= :since')
+            ->setParameter('since', $since)
             ->getQuery()
             ->getSingleScalarResult();
     }
